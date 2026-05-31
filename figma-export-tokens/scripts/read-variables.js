@@ -1,7 +1,8 @@
 // figma-export-tokens — read all local variables on ANY Figma plan.
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-export-tokens").
-// Returns a normalized JSON tree the agent converts to DTCG / CSS / Tailwind / SCSS / TS.
+// Returns a normalized JSON tree. Save it, then run convert-tokens.mjs (deterministic) to
+// emit DTCG / CSS / Tailwind / SCSS / TS / JSON — do not hand-convert.
 // Uses the Plugin API (works on Starter/Pro/Org/Enterprise) — NOT the Enterprise-only
 // Variables REST API. See the official figma-use skill.
 

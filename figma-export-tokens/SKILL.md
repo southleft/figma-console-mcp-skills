@@ -25,19 +25,30 @@ plan** and resolves aliases + multi-mode values that `get_variable_defs` (defaul
 2. **Read the variables.** Run [`scripts/read-variables.js`](scripts/read-variables.js) via `use_figma`
    (`skillNames: "figma-export-tokens"`). It returns the normalized collections/modes/variables tree
    with hex colors, resolved alias references, scopes, and code syntax.
-3. **Convert.** Transform the normalized tree to the requested format following
-   [references/token-formats.md](references/token-formats.md). For DTCG, preserve round-trip metadata
-   (`$extensions["figma-console-mcp"].variableId`/`key`) so a later `figma-import-tokens` matches
-   instead of duplicating.
-4. **Write or return.** Write file(s) to the output path (one per mode/collection slice if splitting),
-   or return inline if no path was given. Report every path written + a token count summary.
-5. **Validate.** Re-read one token from the emitted file and confirm its value matches the Figma
-   source. For DTCG, confirm it parses as JSON.
+3. **Save the read output** to a file, e.g. `variables.json`.
+4. **Convert — deterministically.** Run the bundled converter (Node 18+, zero dependencies). **Do not
+   hand-write the conversion** — this script is the source of truth and produces identical output every
+   run:
+   ```bash
+   node scripts/convert-tokens.mjs variables.json --format dtcg --out tokens/
+   # --format: dtcg (default) | css | tailwind | scss | ts | json-nested | json-flat
+   # --out <dir> writes the file; omit to print to stdout. --prefix <p> prefixes CSS/SCSS names.
+   ```
+   It handles exactly what freehand conversion gets wrong: **per-type units** (opacity/line-height
+   unitless, spacing/radius `px`), **one `:root` + `.dark`/`[data-theme]`** merged across collections
+   (not two `:root`), **aliases → `var()`/`{ref}`**, **font-weight names → numbers**, DTCG round-trip
+   metadata (`$extensions["figma-console-mcp"].variableId`/`key`), and it **warns** on slug collisions
+   and non-numeric weights.
+5. **Report.** Surface the written path(s) and any warnings the converter printed (collisions /
+   weight issues are real findings about the Figma file, worth flagging to the user).
 
 ## Notes
-- Variable `name` uses `/` as the group separator (`Color/Brand/Primary`). Slug it per the target
-  format's convention (kebab for CSS, dot-path for DTCG/JS).
-- Large systems: the read script returns everything in one call. If serialization is huge, ask the
-  user to scope to specific collection names and filter `collections` before converting.
-- Spacing/size FLOATs are usually px in Figma — convert to `rem` (÷16) only when the target wants it
-  (Tailwind/CSS spacing) and say so.
+- **The converter is deterministic and authoritative.** [references/token-formats.md](references/token-formats.md)
+  documents the formats it emits; it is reference, not a thing to re-implement by hand.
+- **Where it runs:** `read-variables.js` runs anywhere via `use_figma`. `convert-tokens.mjs` is Node,
+  so it needs a terminal-capable agent (Claude Code, the Code tab in Claude Desktop, Cursor, Codex,
+  Gemini CLI). In plain Desktop/web chat (no shell), run the converter on your own machine against the
+  saved `variables.json`, or accept a best-effort inline conversion for DTCG only.
+- **Large systems:** if the read is huge, scope it to specific collection names before saving.
+- **Aliases across collections** become `var(--…)` / `{ref}` — export *all* collections together so
+  those references resolve.

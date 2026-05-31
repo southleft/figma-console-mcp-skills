@@ -1,5 +1,9 @@
 # Token output formats
 
+> **The conversion is implemented deterministically in [`scripts/convert-tokens.mjs`](../scripts/convert-tokens.mjs)** —
+> run that, don't hand-write output. This doc explains *what* it emits (and the rules it follows) so
+> you can review or extend it; it is not a spec to re-implement by hand.
+
 `scripts/read-variables.js` returns this normalized shape:
 
 ```jsonc
