@@ -16,13 +16,16 @@ matched by saved Figma id → key → exact name, so an update edits in place ra
 
 ## Workflow
 
-1. **Parse the source into the canonical token list.** Read the user's token file and flatten it to
-   the `TOKENS` array shape the apply script expects:
+1. **Parse the source into the canonical token list — deterministically.** For **DTCG** input (incl.
+   anything `figma-export-tokens` produced), run the bundled parser instead of flattening by hand:
+   ```bash
+   node scripts/parse-tokens.mjs tokens.tokens.json --default-mode Light --collection Brand
+   ```
+   It prints the exact `COLLECTION_NAME` / `MODES` / `TOKENS` constants to paste into the apply script
+   — handling `$type`→Figma type, `{ref}` aliases, multi-mode (`$extensions…modes`), `dimension` unit
+   stripping, and `variableId` round-trip. For non-DTCG sources (a Tailwind/SCSS export), export to
+   DTCG first or hand-build the `TOKENS` array:
    `{ name: "Color/Brand/Primary", type: "COLOR"|"FLOAT"|"STRING"|"BOOLEAN", values: { <mode>: literal | { reference: "{Color.Brand.500}" } }, figmaVariableId? }`.
-   - DTCG: group keys → `/`-joined `name`; `$value` → per-mode value; `{ref}` stays a `reference`;
-     read `$extensions["figma-console-mcp"].variableId` into `figmaVariableId` for exact matching.
-   - DTCG `$type` → Figma type: `color`→`COLOR`, `number`/`dimension`→`FLOAT`, `string`→`STRING`,
-     `boolean`→`BOOLEAN`.
 2. **Decide conflict policy.** Default: code wins on values, but never delete Figma-only variables
    without asking. Confirm the target collection name and the mode list (first = default).
 3. **Apply.** Put the parsed data into the constants at the top of

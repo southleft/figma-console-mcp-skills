@@ -9,6 +9,7 @@ const COMPONENT_ID = "REPLACE_WITH_COMPONENT_OR_SET_ID"; // local COMPONENT / CO
 const VARIANT = null;                       // e.g. { Size: "md", State: "default" } — picks a variant + sets variant props
 const OVERRIDES = null;                     // e.g. { Label: "Save", "Show icon": true } — TEXT/BOOLEAN/INSTANCE_SWAP
 const POSITION = null;                      // e.g. { x: 100, y: 200 }
+const SIZE = null;                          // e.g. { width: 200, height: 48 } — resize the created instance, or null
 const PARENT_ID = null;                     // frame/section id to append the instance into, or null
 
 // --- Resolve a COMPONENT to instantiate ---
@@ -58,6 +59,7 @@ if (!component) {
 // --- Create the instance ---
 const instance = component.createInstance();
 if (POSITION) { instance.x = POSITION.x || 0; instance.y = POSITION.y || 0; }
+if (SIZE) { instance.resize(SIZE.width, SIZE.height); }
 if (PARENT_ID) {
   const parent = await figma.getNodeByIdAsync(PARENT_ID);
   if (parent && "appendChild" in parent) parent.appendChild(instance);

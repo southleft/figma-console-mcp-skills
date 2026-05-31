@@ -164,6 +164,17 @@ const variableNameById = {};
 if (activeRuleSet['token-misuse']) {
   try { for (const v of await figma.variables.getLocalVariablesAsync()) variableNameById[v.id] = v.name; } catch (e) {}
 }
+// Fallback resolver: a bound variable may be a LIBRARY/remote token absent from the local map.
+// Resolve its name via getVariableByIdAsync so token-misuse isn't silently skipped. Cached
+// (including misses, stored as null) to avoid repeat async lookups during the walk.
+async function resolveVariableName(id) {
+  if (id in variableNameById) return variableNameById[id];
+  try {
+    const v = await figma.variables.getVariableByIdAsync(id);
+    variableNameById[id] = v ? v.name : null;
+  } catch (e) { variableNameById[id] = null; }
+  return variableNameById[id];
+}
 
 // ---- Findings ----
 const findings = {};
@@ -176,7 +187,7 @@ function push(rule, obj) {
   else truncated = true;
 }
 
-function walk(node, depth) {
+async function walk(node, depth) {
   if (depth > MAX_DEPTH || truncated) return;
   nodesScanned++;
   let type, name, id;
@@ -402,14 +413,17 @@ function walk(node, depth) {
     try {
       for (const f of (node.fills || [])) {
         if (f.type === 'SOLID' && f.visible !== false && f.boundVariables && f.boundVariables.color) {
-          const vName = (variableNameById[f.boundVariables.color.id] || '').toLowerCase();
+          const boundId = f.boundVariables.color.id;
+          // Resolve via the local map first; fall back to async lookup for library/remote tokens.
+          const resolvedName = await resolveVariableName(boundId);
+          const vName = (resolvedName || '').toLowerCase();
           if (!vName) continue;
           const isBgToken = /^(bg|background|surface|fill)[\/-]/.test(vName);
           const isTextToken = /^(text|fg|foreground|font)[\/-]/.test(vName);
           if (type === 'TEXT' && isBgToken)
-            push('token-misuse', { id, name, variable: variableNameById[f.boundVariables.color.id], usage: 'text fill', expectedPrefix: 'text/*, fg/*, foreground/*', suggestion: 'Text uses a background/surface token as fill — likely misbound; use a text/foreground token.' });
+            push('token-misuse', { id, name, variable: resolvedName, usage: 'text fill', expectedPrefix: 'text/*, fg/*, foreground/*', suggestion: 'Text uses a background/surface token as fill — likely misbound; use a text/foreground token.' });
           if (['FRAME', 'COMPONENT', 'INSTANCE', 'RECTANGLE'].includes(type) && isTextToken && !truncated)
-            push('token-misuse', { id, name, variable: variableNameById[f.boundVariables.color.id], usage: 'background fill', expectedPrefix: 'bg/*, background/*, surface/*', suggestion: 'Container uses a text/foreground token as background — likely misbound; use a background/surface token.' });
+            push('token-misuse', { id, name, variable: resolvedName, usage: 'background fill', expectedPrefix: 'bg/*, background/*, surface/*', suggestion: 'Container uses a text/foreground token as background — likely misbound; use a background/surface token.' });
         }
       }
     } catch (e) {}
@@ -463,10 +477,10 @@ function walk(node, depth) {
   }
 
   // recurse
-  try { if (node.children) for (const c of node.children) { if (truncated) break; walk(c, depth + 1); } } catch (e) {}
+  try { if (node.children) for (const c of node.children) { if (truncated) break; await walk(c, depth + 1); } } catch (e) {}
 }
 
-walk(rootNode, 0);
+await walk(rootNode, 0);
 
 // ---- Post-walk: heading hierarchy ----
 if (activeRuleSet['wcag-heading-hierarchy'] && headingSequence.length >= 2 && !truncated) {

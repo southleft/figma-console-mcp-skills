@@ -44,5 +44,6 @@ front door for code generation and library audits.
 - **Per-variant visual specs** come from each variant component node — see
   [references/visual-spec.md](references/visual-spec.md) for the fields (fills, strokes, effects,
   cornerRadius, opacity, layout/padding/spacing, typography).
-- This script is the open-coded equivalent of the bundled `figma_get_design_system_kit` tool, written
-  in the native `use_figma` idiom so it runs without the Desktop Bridge.
+- This script is the open-coded, root+first-level equivalent of the bundled `figma_get_design_system_kit`
+  tool, written in the native `use_figma` idiom so it runs without the Desktop Bridge. It captures each
+  component/variant's root visual spec plus its direct children (`childSpecs`); it does not recurse deeper.

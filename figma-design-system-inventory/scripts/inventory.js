@@ -67,6 +67,7 @@ function extractVisualSpec(node) {
   } catch (e) {}
 
   if (node.cornerRadius !== undefined && node.cornerRadius !== figma.mixed && node.cornerRadius > 0) { spec.cornerRadius = node.cornerRadius; hasData = true; }
+  try { if (node.rectangleCornerRadii) { spec.rectangleCornerRadii = node.rectangleCornerRadii; hasData = true; } } catch (e) {}
   if (node.opacity !== undefined && node.opacity < 1) { spec.opacity = node.opacity; hasData = true; }
 
   if (node.layoutMode && node.layoutMode !== "NONE") {
@@ -93,6 +94,23 @@ function extractVisualSpec(node) {
   }
 
   return hasData ? spec : undefined;
+}
+
+// First-level children specs (mirrors the bundled extractComponentVisualData childSpecs).
+// Guarded for nodes whose `children` getter throws or that lack children.
+function firstLevelChildSpecs(node) {
+  let kids;
+  try { if (!("children" in node)) return undefined; kids = node.children; } catch (e) { return undefined; }
+  if (!Array.isArray(kids) || kids.length === 0) return undefined;
+  const out = [];
+  for (const child of kids) {
+    const info = { name: child.name, type: child.type };
+    const cvs = extractVisualSpec(child);
+    if (cvs) info.visualSpec = cvs;
+    try { if (child.characters) info.characters = child.characters; } catch (e) {}
+    out.push(info);
+  }
+  return out.length > 0 ? out : undefined;
 }
 
 const result = {
@@ -194,6 +212,8 @@ if (has("components")) {
         const v = { name: variant.name, id: variant.id };
         const vs = extractVisualSpec(variant);
         if (vs) v.visualSpec = vs;
+        const cs = firstLevelChildSpecs(variant);
+        if (cs) v.childSpecs = cs;
         return v;
       });
     } else {
@@ -206,7 +226,7 @@ if (has("components")) {
     if (!nameMatches(comp.name)) continue;
     const item = { id: comp.id, name: comp.name, kind: "COMPONENT", description: comp.description || "" };
     if (VERBOSITY !== "inventory") item.componentProps = comp.componentPropertyDefinitions || {};
-    if (VERBOSITY === "full") { const vs = extractVisualSpec(comp); if (vs) item.visualSpec = vs; }
+    if (VERBOSITY === "full") { const vs = extractVisualSpec(comp); if (vs) item.visualSpec = vs; const cs = firstLevelChildSpecs(comp); if (cs) item.childSpecs = cs; }
     items.push(item);
   }
 

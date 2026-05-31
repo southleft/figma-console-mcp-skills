@@ -49,7 +49,7 @@ function normalizeColor(hex) {
   if (s.length === 8 && s.slice(6) === 'FF') s = s.slice(0, 6); // drop opaque alpha
   return '#' + s;
 }
-function numericClose(a, b, eps) { return Math.abs(a - b) <= (eps === undefined ? 0.5 : eps); }
+function numericClose(a, b, eps) { return Math.abs(a - b) <= (eps === undefined ? 1 : eps); }
 function firstFillColor(fills) {
   if (!Array.isArray(fills)) return null;
   const f = fills.find((x) => x.type === 'SOLID' && x.visible !== false);

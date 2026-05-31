@@ -33,7 +33,7 @@ choose to record.
 
 Comparisons use a small epsilon so sub-pixel rounding doesn't register as drift:
 
-- padding / gap / font size / border width / radius: ±0.5px
+- padding / gap / font size / border width / radius: ±1px
 - width / height: ±2px
 - opacity: ±0.01
 - font weight: ±1

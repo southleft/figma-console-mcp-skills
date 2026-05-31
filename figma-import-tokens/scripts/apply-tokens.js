@@ -20,13 +20,16 @@ const TOKENS = [
 // ───────────────────────────────────────────────────────────────────────────────
 
 function hexToRgb(hex) {
-  hex = String(hex).replace('#', '');
-  if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
+  let s = String(hex).trim().replace(/^#/, '');
+  if (![3, 4, 6, 8].includes(s.length) || /[^0-9a-fA-F]/.test(s)) {
+    throw new Error('Invalid hex color: ' + JSON.stringify(hex)); // fail loud, never write NaN
+  }
+  if (s.length === 3 || s.length === 4) s = s.split('').map((c) => c + c).join('');
   return {
-    r: parseInt(hex.substring(0, 2), 16) / 255,
-    g: parseInt(hex.substring(2, 4), 16) / 255,
-    b: parseInt(hex.substring(4, 6), 16) / 255,
-    a: hex.length === 8 ? parseInt(hex.substring(6, 8), 16) / 255 : 1,
+    r: parseInt(s.substring(0, 2), 16) / 255,
+    g: parseInt(s.substring(2, 4), 16) / 255,
+    b: parseInt(s.substring(4, 6), 16) / 255,
+    a: s.length === 8 ? parseInt(s.substring(6, 8), 16) / 255 : 1,
   };
 }
 
@@ -71,7 +74,13 @@ for (const t of TOKENS) {
       const raw = t.values[mode];
       if (raw === undefined || raw === null) continue;
       if (raw && typeof raw === 'object' && raw.reference) continue; // alias → pass 2
-      const value = t.type === 'COLOR' && typeof raw === 'string' ? hexToRgb(raw) : raw;
+      // Coerce per Figma type so a DTCG dimension like "16px" lands as the number 16, etc.
+      let value;
+      if (t.type === 'COLOR') value = typeof raw === 'string' ? hexToRgb(raw) : raw;
+      else if (t.type === 'FLOAT') value = typeof raw === 'number' ? raw : parseFloat(String(raw));
+      else if (t.type === 'BOOLEAN') value = typeof raw === 'boolean' ? raw : String(raw).toLowerCase() === 'true';
+      else value = String(raw); // STRING
+      if (t.type === 'FLOAT' && Number.isNaN(value)) { errors.push({ token: t.name, error: 'non-numeric FLOAT value: ' + JSON.stringify(raw) }); continue; }
       v.setValueForMode(modeIdByName[mode], value);
     }
   } catch (e) {

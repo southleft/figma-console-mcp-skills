@@ -20,13 +20,16 @@ const SCOPES = {};
 // ───────────────────────────────────────────────────────────────────────────────
 
 function hexToRgb(hex) {
-  hex = String(hex).replace('#', '');
-  if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
+  let s = String(hex).trim().replace(/^#/, '');
+  if (![3, 4, 6, 8].includes(s.length) || /[^0-9a-fA-F]/.test(s)) {
+    throw new Error('Invalid hex color: ' + JSON.stringify(hex)); // fail loud, never write NaN
+  }
+  if (s.length === 3 || s.length === 4) s = s.split('').map((c) => c + c).join('');
   return {
-    r: parseInt(hex.substring(0, 2), 16) / 255,
-    g: parseInt(hex.substring(2, 4), 16) / 255,
-    b: parseInt(hex.substring(4, 6), 16) / 255,
-    a: hex.length === 8 ? parseInt(hex.substring(6, 8), 16) / 255 : 1,
+    r: parseInt(s.substring(0, 2), 16) / 255,
+    g: parseInt(s.substring(2, 4), 16) / 255,
+    b: parseInt(s.substring(4, 6), 16) / 255,
+    a: s.length === 8 ? parseInt(s.substring(6, 8), 16) / 255 : 1,
   };
 }
 
