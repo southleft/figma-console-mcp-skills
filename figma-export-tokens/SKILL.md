@@ -1,6 +1,6 @@
 ---
 name: figma-export-tokens
-description: "Export Figma variables to design token files in DTCG, CSS custom properties, Tailwind v4/v3, SCSS, TypeScript, or JSON. Use when the user wants to pull design tokens OUT of Figma into code — triggers: 'export tokens', 'export Figma variables', 'generate CSS variables from Figma', 'turn my Figma variables into a tokens.json / Tailwind config / SCSS', 'sync design tokens to code'. Works on ANY Figma plan (reads via the Plugin API, not the Enterprise-only Variables REST API). For the reverse direction (code → Figma) use figma-import-tokens."
+description: "Export Figma variables to design token files in DTCG, CSS custom properties, Tailwind v4/v3, SCSS, TypeScript, JSON, Style Dictionary, or Tokens Studio. Use when the user wants to pull design tokens OUT of Figma into code — triggers: 'export tokens', 'export Figma variables', 'generate CSS variables from Figma', 'turn my Figma variables into a tokens.json / Tailwind config / SCSS', 'sync design tokens to code'. Works on ANY Figma plan (reads via the Plugin API, not the Enterprise-only Variables REST API). For the reverse direction (code → Figma) use figma-import-tokens."
 disable-model-invocation: false
 ---
 
@@ -31,14 +31,21 @@ plan** and resolves aliases + multi-mode values that `get_variable_defs` (defaul
    run:
    ```bash
    node scripts/convert-tokens.mjs variables.json --format dtcg --out tokens/
-   # --format: dtcg (default) | css | tailwind | scss | ts | json-nested | json-flat
-   # --out <dir> writes the file; omit to print to stdout. --prefix <p> prefixes CSS/SCSS names.
+   # --format: dtcg (default) | css-vars | tailwind-v4 | tailwind-v3 | scss | ts-module
+   #           | json-flat | json-nested | style-dictionary-v3 | tokens-studio
+   #           (aliases: css, tailwind, ts)
+   # --out <dir>  write file(s) — tokens-studio writes several; omit to print to stdout
+   # --prefix <p>            prefix CSS/SCSS var names
+   # --modes Light,Dark      include only these modes (default: all)
+   # --collection <substr>   include only collections whose name contains <substr>
    ```
-   It handles exactly what freehand conversion gets wrong: **per-type units** (opacity/line-height
-   unitless, spacing/radius `px`), **one `:root` + `.dark`/`[data-theme]`** merged across collections
-   (not two `:root`), **aliases → `var()`/`{ref}`**, **font-weight names → numbers**, DTCG round-trip
-   metadata (`$extensions["figma-console-mcp"].variableId`/`key`), and it **warns** on slug collisions
-   and non-numeric weights.
+   This matches the Console `figma_export_tokens` formatters. It handles exactly what freehand
+   conversion gets wrong: **per-type units** (opacity/line-height unitless, spacing/radius `px`);
+   **multi-mode** output (CSS & Tailwind v4 emit `:root` + `.dark`/`[data-theme]`; TS/JSON emit
+   `{mode: value}`; SCSS suffixes modes; DTCG keeps them in `$extensions`); **aliases → `var()`/`{ref}`**;
+   **font-weight names → numbers**; DTCG round-trip metadata; and it **warns** on slug collisions and
+   non-numeric weights. (`style-dictionary-v3` and `tailwind-v3` use the primary mode, matching the
+   Console — those formats have no native multi-mode encoding.)
 5. **Report.** Surface the written path(s) and any warnings the converter printed (collisions /
    weight issues are real findings about the Figma file, worth flagging to the user).
 
