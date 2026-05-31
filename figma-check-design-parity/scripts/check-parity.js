@@ -88,24 +88,51 @@ function extractText(node) {
   return out;
 }
 
+// Resolve a node property's bound variable → { name, mode } so a color/value mismatch points at
+// the Figma TOKEN (and which mode resolved), not just a literal. On a properly tokenized design the
+// literal fill already equals the resolved token value, but the token name is what's actionable.
+async function boundTokenInfo(node, prop) {
+  try {
+    const bv = node.boundVariables && node.boundVariables[prop];
+    if (!bv) return null;
+    const b = Array.isArray(bv) ? bv[0] : bv;
+    const v = await figma.variables.getVariableByIdAsync(b.id);
+    if (!v) return null;
+    let mode = null;
+    try {
+      const coll = await figma.variables.getVariableCollectionByIdAsync(v.variableCollectionId);
+      const mid = node.resolvedVariableModes ? node.resolvedVariableModes[coll.id] : null;
+      const mm = mid && coll.modes.find((m) => m.modeId === mid);
+      mode = mm ? mm.name : null;
+    } catch (e) {}
+    return { name: v.name, mode };
+  } catch (e) { return null; }
+}
+
 // ---- Resolve node ----
 const node = await figma.getNodeByIdAsync(NODE_ID);
 if (!node) throw new Error('Node not found: ' + NODE_ID);
 
 const discrepancies = [];
-function add(category, property, severity, designValue, codeValue, message, suggestion) {
-  discrepancies.push({ category, property, severity, designValue, codeValue, message, suggestion });
+function add(category, property, severity, designValue, codeValue, message, suggestion, extra) {
+  discrepancies.push(Object.assign({ category, property, severity, designValue, codeValue, message, suggestion }, extra || {}));
 }
 
 // ---- Compare: visual ----
 const cv = CODE_SPEC.visual;
 if (cv) {
   const fill = firstFillColor(node.fills);
-  if (fill && cv.backgroundColor && normalizeColor(fill) !== normalizeColor(cv.backgroundColor))
-    add('visual', 'backgroundColor', 'major', fill, cv.backgroundColor, 'Background color mismatch: design=' + fill + ', code=' + cv.backgroundColor, 'Update to match ' + fill);
+  if (fill && cv.backgroundColor && normalizeColor(fill) !== normalizeColor(cv.backgroundColor)) {
+    const tok = await boundTokenInfo(node, 'fills');
+    const tokStr = tok ? ' (Figma token ' + tok.name + (tok.mode ? ', ' + tok.mode + ' mode' : '') + ')' : '';
+    add('visual', 'backgroundColor', 'major', fill, cv.backgroundColor, 'Background color mismatch: design=' + fill + tokStr + ', code=' + cv.backgroundColor, tok ? 'Reconcile Figma token ' + tok.name + ' with the code value.' : 'Update to match ' + fill, tok ? { designToken: tok.name, designMode: tok.mode } : undefined);
+  }
   const stroke = firstStrokeColor(node.strokes);
-  if (stroke && cv.borderColor && normalizeColor(stroke) !== normalizeColor(cv.borderColor))
-    add('visual', 'borderColor', 'major', stroke, cv.borderColor, 'Border color mismatch: design=' + stroke + ', code=' + cv.borderColor, 'Update to match ' + stroke);
+  if (stroke && cv.borderColor && normalizeColor(stroke) !== normalizeColor(cv.borderColor)) {
+    const tok = await boundTokenInfo(node, 'strokes');
+    const tokStr = tok ? ' (Figma token ' + tok.name + (tok.mode ? ', ' + tok.mode + ' mode' : '') + ')' : '';
+    add('visual', 'borderColor', 'major', stroke, cv.borderColor, 'Border color mismatch: design=' + stroke + tokStr + ', code=' + cv.borderColor, tok ? 'Reconcile Figma token ' + tok.name + ' with the code value.' : 'Update to match ' + stroke, tok ? { designToken: tok.name, designMode: tok.mode } : undefined);
+  }
   let sw; try { sw = node.strokeWeight; } catch (e) {}
   if (typeof sw === 'number' && cv.borderWidth !== undefined && !numericClose(sw, cv.borderWidth))
     add('visual', 'borderWidth', 'minor', sw, cv.borderWidth, 'Border width mismatch: design=' + sw + 'px, code=' + cv.borderWidth + 'px');
