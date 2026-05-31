@@ -17,7 +17,7 @@ try {
   // Categories may be unavailable on some files — continue without names
 }
 const categoryMap = {};
-for (const c of categories) categoryMap[c.id] = c.name;
+for (const c of categories) categoryMap[c.id] = c.label; // AnnotationCategory exposes .label, not .name
 
 function extractAnnotations(n) {
   const anns = n.annotations || [];
@@ -62,5 +62,5 @@ return {
   childAnnotationCount: INCLUDE_CHILDREN
     ? childAnnotations.reduce((sum, c) => sum + c.annotations.length, 0)
     : undefined,
-  availableCategories: categories.map((c) => ({ id: c.id, name: c.name })),
+  availableCategories: categories.map((c) => ({ id: c.id, label: c.label })),
 };

@@ -68,6 +68,12 @@ mind when adapting a script:
   `undefined`, and `(node.children || [])` does **not** save you (the throw happens before `||`).
   Guard recursive walks with `if ("children" in node && node.children) { … }`, or short-circuit on a
   container type check first (`if (node.type === 'FRAME' && node.children) …`).
+- **`figma.loadAllPagesAsync()` is NOT supported in `use_figma`** (it works in a packaged plugin /
+  the Console MCP bridge, but throws here). Consequently `figma.root.findAllWithCriteria(...)` —
+  which requires all pages loaded — also fails. To enumerate components/nodes across pages, load each
+  page incrementally and scan it: `for (const page of figma.root.children) { await figma.setCurrentPageAsync(page); page.findAllWithCriteria({ types: ['COMPONENT_SET'] }); }` (capture and restore the original `figma.currentPage` afterward to be polite).
+- **`AnnotationCategory` exposes `.label`, not `.name`** — reading `category.name` returns `undefined`
+  and leaks the raw category id where a human-readable label was expected.
 - **Alias / bound-variable targets can live outside the enumerated set.** Neither
   `getLocalVariableCollectionsAsync()` nor `getLocalVariablesAsync()` is guaranteed to return every
   variable an alias points at — orphaned/hidden collections remain referenceable. If you resolve a

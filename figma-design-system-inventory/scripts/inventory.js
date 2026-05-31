@@ -158,9 +158,18 @@ if (has("tokens")) {
 
 // ============================== COMPONENTS ==============================
 if (has("components")) {
-  await figma.loadAllPagesAsync();
-  const sets = figma.root.findAllWithCriteria({ types: ["COMPONENT_SET"] });
-  const allComponents = figma.root.findAllWithCriteria({ types: ["COMPONENT"] });
+  // NOTE: figma.loadAllPagesAsync() is NOT supported in the use_figma runtime, and
+  // figma.root.findAllWithCriteria() requires all pages loaded. So load pages incrementally
+  // with setCurrentPageAsync and scan each page, then restore the original page.
+  const _origPage = figma.currentPage;
+  const sets = [];
+  const allComponents = [];
+  for (const page of figma.root.children) {
+    await figma.setCurrentPageAsync(page);
+    sets.push(...page.findAllWithCriteria({ types: ["COMPONENT_SET"] }));
+    allComponents.push(...page.findAllWithCriteria({ types: ["COMPONENT"] }));
+  }
+  await figma.setCurrentPageAsync(_origPage);
   // Standalone components = those NOT inside a component set (sets cover their variants).
   const standalone = allComponents.filter((c) => !(c.parent && c.parent.type === "COMPONENT_SET"));
 
