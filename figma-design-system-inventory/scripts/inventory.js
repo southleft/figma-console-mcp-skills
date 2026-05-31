@@ -7,6 +7,11 @@
 const INCLUDE = ["tokens", "components", "styles"]; // any subset
 const VERBOSITY = "full";              // "full" | "summary" | "inventory"
 const COMPONENT_NAME_FILTER = null;    // substring filter, e.g. "Button", or null for all
+// Which pages to scan for components. [] = ALL pages. IMPORTANT: the per-page scan loads each
+// page (setCurrentPageAsync), so on large files (roughly 30+ pages) scanning everything can exceed
+// the use_figma time limit and fail. Scope to the page(s) that hold your components —
+// e.g. ["Components", "Button"] — to keep it fast and reliable.
+const PAGE_NAMES = [];
 
 function has(section) { return INCLUDE.indexOf(section) !== -1; }
 
@@ -164,12 +169,15 @@ if (has("components")) {
   const _origPage = figma.currentPage;
   const sets = [];
   const allComponents = [];
-  for (const page of figma.root.children) {
+  const _pagesToScan = figma.root.children.filter((p) => PAGE_NAMES.length === 0 || PAGE_NAMES.indexOf(p.name) !== -1);
+  for (const page of _pagesToScan) {
     await figma.setCurrentPageAsync(page);
     sets.push(...page.findAllWithCriteria({ types: ["COMPONENT_SET"] }));
     allComponents.push(...page.findAllWithCriteria({ types: ["COMPONENT"] }));
   }
   await figma.setCurrentPageAsync(_origPage);
+  result.pagesScanned = _pagesToScan.length;
+  result.totalPagesInFile = figma.root.children.length;
   // Standalone components = those NOT inside a component set (sets cover their variants).
   const standalone = allComponents.filter((c) => !(c.parent && c.parent.type === "COMPONENT_SET"));
 
