@@ -66,26 +66,38 @@ if (PARENT_ID) {
 }
 
 // --- Apply properties. Instance keys carry "#nodeId" suffixes for TEXT/BOOLEAN/INSTANCE_SWAP;
-//     VARIANT props use the bare name. Resolve both so callers can pass the human name. ---
+//     VARIANT props use the bare name. Resolve both so callers can pass the human name.
+//     Each property is set in its OWN try/catch (Console INSTANTIATE_COMPONENT order), so one bad
+//     key is skipped + recorded instead of a batched setProperties throwing and applying none. ---
+const setKeys = [];
+const errors = [];
 function applyProps(updates) {
-  if (!updates) return [];
+  if (!updates) return;
   const current = instance.componentProperties;
-  const toSet = {};
   for (const name of Object.keys(updates)) {
+    let key = null;
     if (current[name] !== undefined) {
-      toSet[name] = updates[name];
+      key = name;
     } else {
       const suffixed = Object.keys(current).find((k) => k.startsWith(name + "#"));
-      if (suffixed) toSet[suffixed] = updates[name];
+      if (suffixed) key = suffixed;
+    }
+    if (key === null) { errors.push({ property: name, error: "Property not found on instance" }); continue; }
+    try {
+      instance.setProperties({ [key]: updates[name] });
+      setKeys.push(key);
+    } catch (e) {
+      errors.push({ property: name, error: e && e.message ? e.message : String(e) });
     }
   }
-  if (Object.keys(toSet).length > 0) instance.setProperties(toSet);
-  return Object.keys(toSet);
 }
 
-const setKeys = [];
-if (VARIANT) { try { instance.setProperties(VARIANT); setKeys.push(...Object.keys(VARIANT)); } catch (e) {} }
-setKeys.push(...applyProps(OVERRIDES));
+// Console order: apply overrides BEFORE the variant selection.
+applyProps(OVERRIDES);
+if (VARIANT) {
+  try { instance.setProperties(VARIANT); setKeys.push(...Object.keys(VARIANT)); }
+  catch (e) { errors.push({ property: "VARIANT", error: e && e.message ? e.message : String(e) }); }
+}
 
 const updated = instance.componentProperties;
 
@@ -93,7 +105,12 @@ return {
   instanceId: instance.id,
   instanceName: instance.name,
   mainComponentId: component.id,
+  x: instance.x,
+  y: instance.y,
+  width: instance.width,
+  height: instance.height,
   propertiesSet: setKeys,
+  errors,
   currentProperties: Object.keys(updated).reduce((acc, k) => {
     acc[k] = { type: updated[k].type, value: updated[k].value };
     return acc;

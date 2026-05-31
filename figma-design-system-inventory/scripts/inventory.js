@@ -206,7 +206,11 @@ if (has("components")) {
   for (const set of sets) {
     if (!nameMatches(set.name)) continue;
     const item = { id: set.id, name: set.name, kind: "COMPONENT_SET", description: set.description || "" };
-    if (VERBOSITY !== "inventory") item.componentProps = set.componentPropertyDefinitions || {};
+    // Match figma_get_design_system_kit: bounds + `properties` (was `componentProps`)
+    if (set.width !== undefined && set.height !== undefined) {
+      item.bounds = { width: Math.round(set.width), height: Math.round(set.height) };
+    }
+    if (VERBOSITY !== "inventory") item.properties = set.componentPropertyDefinitions || {};
     if (VERBOSITY === "full") {
       item.variants = set.children.filter((c) => c.type === "COMPONENT").map((variant) => {
         const v = { name: variant.name, id: variant.id };
@@ -225,7 +229,11 @@ if (has("components")) {
   for (const comp of standalone) {
     if (!nameMatches(comp.name)) continue;
     const item = { id: comp.id, name: comp.name, kind: "COMPONENT", description: comp.description || "" };
-    if (VERBOSITY !== "inventory") item.componentProps = comp.componentPropertyDefinitions || {};
+    // Match figma_get_design_system_kit: bounds + `properties` (was `componentProps`)
+    if (comp.width !== undefined && comp.height !== undefined) {
+      item.bounds = { width: Math.round(comp.width), height: Math.round(comp.height) };
+    }
+    if (VERBOSITY !== "inventory") item.properties = comp.componentPropertyDefinitions || {};
     if (VERBOSITY === "full") { const vs = extractVisualSpec(comp); if (vs) item.visualSpec = vs; const cs = firstLevelChildSpecs(comp); if (cs) item.childSpecs = cs; }
     items.push(item);
   }
@@ -243,32 +251,59 @@ if (has("styles")) {
   const items = [];
   for (const s of paint) {
     const entry = { key: s.key, name: s.name, styleType: "PAINT", description: s.description || "" };
-    if (VERBOSITY === "full" && s.paints && s.paints[0] && s.paints[0].color) entry.resolvedValue = toHex(s.paints[0].color);
+    // Match figma_get_design_system_kit resolveStyleValues: { fills: [{ type, color: <hex>, opacity }] }
+    if (VERBOSITY === "full" && s.paints && Array.isArray(s.paints)) {
+      entry.resolvedValue = {
+        fills: s.paints
+          .filter((f) => f.visible !== false)
+          .map((f) => ({
+            type: f.type,
+            color: f.color ? toHex(f.color) : undefined,
+            opacity: f.opacity
+          }))
+      };
+    }
     items.push(entry);
   }
   for (const s of text) {
     const entry = { key: s.key, name: s.name, styleType: "TEXT", description: s.description || "" };
+    // Match figma_get_design_system_kit: { typography: { fontFamily, fontSize, fontWeight, lineHeight, letterSpacing } }
     if (VERBOSITY === "full") {
       entry.resolvedValue = {
-        fontFamily: s.fontName ? s.fontName.family : null,
-        fontStyle: s.fontName ? s.fontName.style : null,
-        fontSize: s.fontSize,
-        lineHeight: s.lineHeight,
-        letterSpacing: s.letterSpacing
+        typography: {
+          fontFamily: s.fontName ? s.fontName.family : null,
+          fontSize: s.fontSize,
+          fontWeight: s.fontName ? s.fontName.style : null,
+          lineHeight: s.lineHeight,
+          letterSpacing: s.letterSpacing
+        }
       };
     }
     items.push(entry);
   }
   for (const s of effect) {
     const entry = { key: s.key, name: s.name, styleType: "EFFECT", description: s.description || "" };
-    if (VERBOSITY === "full") entry.resolvedValue = s.effects;
+    // Match figma_get_design_system_kit: { effects: [{ type, color: <hex>, offset, radius, spread }] }
+    if (VERBOSITY === "full" && s.effects && Array.isArray(s.effects)) {
+      entry.resolvedValue = {
+        effects: s.effects
+          .filter((e) => e.visible !== false)
+          .map((e) => ({
+            type: e.type,
+            color: e.color ? toHex(e.color) : undefined,
+            offset: e.offset,
+            radius: e.radius,
+            spread: e.spread
+          }))
+      };
+    }
     items.push(entry);
   }
   result.styles = { items, summary: { totalStyles: items.length, stylesByType: byType } };
 }
 
 result.ai_instruction =
-  "Use tokens for color/spacing/typography values, components[].componentProps for the component API, " +
+  "Use tokens for color/spacing/typography values, components[].properties for the component API, " +
   "components[].variants[].visualSpec for per-state appearance, and styles for non-variable values. " +
   "Drop VERBOSITY to 'summary' or 'inventory' (or narrow INCLUDE / COMPONENT_NAME_FILTER) if the response is large.";
 

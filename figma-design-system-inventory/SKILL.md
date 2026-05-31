@@ -32,7 +32,7 @@ front door for code generation and library audits.
    - `COMPONENT_NAME_FILTER` — substring to limit components (e.g. `"Button"`).
 2. **Run** via `use_figma` (`skillNames: "figma-design-system-inventory"`). Reads variables through
    the **Plugin API**, so it works on every Figma plan (no Enterprise REST requirement).
-3. **Consume.** Use `tokens` for color/spacing/typography values, `components[].componentProps` for
+3. **Consume.** Use `tokens` for color/spacing/typography values, `components[].properties` for
    the component API, `components[].variants[].visualSpec` for per-state appearance, and `styles` for
    any style-based (non-variable) values.
 4. **If the result is still large**, drop to a lower `VERBOSITY` or narrow `INCLUDE` /

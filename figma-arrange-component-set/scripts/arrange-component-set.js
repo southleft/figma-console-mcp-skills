@@ -8,6 +8,7 @@
 // See the official figma-use skill for the execution model.
 
 const COMPONENT_SET_ID = "REPLACE_WITH_COMPONENT_SET_ID"; // or ""
+const COMPONENT_SET_NAME = ""; // resolve by name when no id/selection, e.g. "Button"
 const COLUMN_PROPERTY = null; // e.g. "State"; null = auto (last property)
 const GAP = 24;
 const CELL_PADDING = 20;
@@ -29,8 +30,12 @@ if (COMPONENT_SET_ID && COMPONENT_SET_ID.indexOf("REPLACE") === -1) {
 } else {
   componentSet = figma.currentPage.selection.find((n) => n.type === "COMPONENT_SET");
 }
+// Resolve by name when no id/selection (Console figma_arrange_component_set fallback).
+if (!componentSet && COMPONENT_SET_NAME) {
+  componentSet = figma.currentPage.findAll((n) => n.type === "COMPONENT_SET" && n.name === COMPONENT_SET_NAME)[0] || null;
+}
 if (!componentSet || componentSet.type !== "COMPONENT_SET") {
-  throw new Error("Component set not found. Set COMPONENT_SET_ID or select a COMPONENT_SET on the canvas.");
+  throw new Error("Component set not found. Set COMPONENT_SET_ID, COMPONENT_SET_NAME, or select a COMPONENT_SET on the canvas.");
 }
 
 const page = figma.currentPage;
@@ -298,10 +303,14 @@ return {
   grid: {
     rows: totalRows,
     columns: totalCols,
+    cellWidth: cellWidth,
+    cellHeight: cellHeight,
+    gap: GAP,
     columnProperty: columnProp,
     columnValues: columnValues,
     rowProperties: rowProps,
     rowLabels: rowCombinations.map((combo) => rowProps.map((p) => combo[p]).join(" / "))
   },
+  componentSetSize: { width: csWidth, height: csHeight },
   variantCount: newVariants.length
 };

@@ -60,7 +60,7 @@ plain frame may have just `fills`, while a styled button has the full set. Color
 ## Verbosity interaction
 
 - `VERBOSITY: "full"` — every component/variant gets a `visualSpec`. Largest payload.
-- `VERBOSITY: "summary"` — components keep `componentProps` and metadata but **omit** per-variant
+- `VERBOSITY: "summary"` — components keep `properties` and metadata but **omit** per-variant
   `visualSpec` (sets report a `variantCount` instead). Styles keep `resolvedValue` only in `full`.
 - `VERBOSITY: "inventory"` — names, ids, and counts only; no specs, no values. Use for very large
   files just to see what exists, then re-run scoped with `COMPONENT_NAME_FILTER`.
