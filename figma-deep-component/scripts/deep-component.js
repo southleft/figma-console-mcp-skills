@@ -72,34 +72,38 @@ function resolveBoundVars(bv) {
 function extractNodeProps(n) {
   const props = {};
 
-  // Layout
-  if (n.layoutMode) props.layoutMode = n.layoutMode;
-  if (n.primaryAxisSizingMode) props.primaryAxisSizingMode = n.primaryAxisSizingMode;
-  if (n.counterAxisSizingMode) props.counterAxisSizingMode = n.counterAxisSizingMode;
-  if (n.layoutSizingHorizontal) props.layoutSizingHorizontal = n.layoutSizingHorizontal;
-  if (n.layoutSizingVertical) props.layoutSizingVertical = n.layoutSizingVertical;
-  if (n.primaryAxisAlignItems) props.primaryAxisAlignItems = n.primaryAxisAlignItems;
-  if (n.counterAxisAlignItems) props.counterAxisAlignItems = n.counterAxisAlignItems;
-  if (n.paddingLeft) props.paddingLeft = n.paddingLeft;
-  if (n.paddingRight) props.paddingRight = n.paddingRight;
-  if (n.paddingTop) props.paddingTop = n.paddingTop;
-  if (n.paddingBottom) props.paddingBottom = n.paddingBottom;
-  if (n.itemSpacing) props.itemSpacing = n.itemSpacing;
-  if (n.counterAxisSpacing) props.counterAxisSpacing = n.counterAxisSpacing;
-  if (n.layoutWrap && n.layoutWrap !== "NO_WRAP") props.layoutWrap = n.layoutWrap;
-  if (n.minWidth !== undefined && n.minWidth !== null) props.minWidth = n.minWidth;
-  if (n.maxWidth !== undefined && n.maxWidth !== null) props.maxWidth = n.maxWidth;
-  if (n.minHeight !== undefined && n.minHeight !== null) props.minHeight = n.minHeight;
-  if (n.maxHeight !== undefined && n.maxHeight !== null) props.maxHeight = n.maxHeight;
-  if (n.clipsContent) props.clipsContent = true;
+  // Layout — these getters THROW on node types that lack them (e.g. TEXT/leaf), so guard the
+  // whole block: a leaf simply has no layout props to report.
+  try {
+    if (n.layoutMode) props.layoutMode = n.layoutMode;
+    if (n.primaryAxisSizingMode) props.primaryAxisSizingMode = n.primaryAxisSizingMode;
+    if (n.counterAxisSizingMode) props.counterAxisSizingMode = n.counterAxisSizingMode;
+    if (n.layoutSizingHorizontal) props.layoutSizingHorizontal = n.layoutSizingHorizontal;
+    if (n.layoutSizingVertical) props.layoutSizingVertical = n.layoutSizingVertical;
+    if (n.primaryAxisAlignItems) props.primaryAxisAlignItems = n.primaryAxisAlignItems;
+    if (n.counterAxisAlignItems) props.counterAxisAlignItems = n.counterAxisAlignItems;
+    if (n.paddingLeft) props.paddingLeft = n.paddingLeft;
+    if (n.paddingRight) props.paddingRight = n.paddingRight;
+    if (n.paddingTop) props.paddingTop = n.paddingTop;
+    if (n.paddingBottom) props.paddingBottom = n.paddingBottom;
+    if (n.itemSpacing) props.itemSpacing = n.itemSpacing;
+    if (n.counterAxisSpacing) props.counterAxisSpacing = n.counterAxisSpacing;
+    if (n.layoutWrap && n.layoutWrap !== "NO_WRAP") props.layoutWrap = n.layoutWrap;
+    if (n.minWidth !== undefined && n.minWidth !== null) props.minWidth = n.minWidth;
+    if (n.maxWidth !== undefined && n.maxWidth !== null) props.maxWidth = n.maxWidth;
+    if (n.minHeight !== undefined && n.minHeight !== null) props.minHeight = n.minHeight;
+    if (n.maxHeight !== undefined && n.maxHeight !== null) props.maxHeight = n.maxHeight;
+    if (n.clipsContent) props.clipsContent = true;
+  } catch (e) { /* leaf node without layout props */ }
 
-  // Visual (guard figma.mixed)
+  // Visual (guard figma.mixed). Each getter THROWS on node types that lack it (e.g. TEXT/leaf),
+  // so wrap each access in its own try/catch — a leaf simply contributes nothing.
   try { if (n.fills && n.fills !== figma.mixed && n.fills.length > 0) props.fills = n.fills; } catch (e) {}
   try { if (n.strokes && n.strokes.length > 0) props.strokes = n.strokes; } catch (e) {}
-  if (n.strokeWeight !== undefined && n.strokeWeight !== 0 && n.strokeWeight !== figma.mixed) props.strokeWeight = n.strokeWeight;
-  if (n.cornerRadius !== undefined && n.cornerRadius !== 0 && n.cornerRadius !== figma.mixed) props.cornerRadius = n.cornerRadius;
+  try { if (n.strokeWeight !== undefined && n.strokeWeight !== 0 && n.strokeWeight !== figma.mixed) props.strokeWeight = n.strokeWeight; } catch (e) {}
+  try { if (n.cornerRadius !== undefined && n.cornerRadius !== 0 && n.cornerRadius !== figma.mixed) props.cornerRadius = n.cornerRadius; } catch (e) {}
   try { if (n.effects && n.effects.length > 0) props.effects = n.effects; } catch (e) {}
-  if (n.opacity !== undefined && n.opacity < 1) props.opacity = n.opacity;
+  try { if (n.opacity !== undefined && n.opacity < 1) props.opacity = n.opacity; } catch (e) {}
 
   // Typography
   if (n.type === "TEXT") {

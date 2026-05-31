@@ -121,13 +121,15 @@ function add(category, property, severity, designValue, codeValue, message, sugg
 // ---- Compare: visual ----
 const cv = CODE_SPEC.visual;
 if (cv) {
-  const fill = firstFillColor(node.fills);
+  let nodeFills; try { nodeFills = node.fills; } catch (e) {} // .fills getter throws on node types that lack it
+  const fill = firstFillColor(nodeFills);
   if (fill && cv.backgroundColor && normalizeColor(fill) !== normalizeColor(cv.backgroundColor)) {
     const tok = await boundTokenInfo(node, 'fills');
     const tokStr = tok ? ' (Figma token ' + tok.name + (tok.mode ? ', ' + tok.mode + ' mode' : '') + ')' : '';
     add('visual', 'backgroundColor', 'major', fill, cv.backgroundColor, 'Background color mismatch: design=' + fill + tokStr + ', code=' + cv.backgroundColor, tok ? 'Reconcile Figma token ' + tok.name + ' with the code value.' : 'Update to match ' + fill, tok ? { designToken: tok.name, designMode: tok.mode } : undefined);
   }
-  const stroke = firstStrokeColor(node.strokes);
+  let nodeStrokes; try { nodeStrokes = node.strokes; } catch (e) {} // .strokes getter throws on node types that lack it
+  const stroke = firstStrokeColor(nodeStrokes);
   if (stroke && cv.borderColor && normalizeColor(stroke) !== normalizeColor(cv.borderColor)) {
     const tok = await boundTokenInfo(node, 'strokes');
     const tokStr = tok ? ' (Figma token ' + tok.name + (tok.mode ? ', ' + tok.mode + ' mode' : '') + ')' : '';

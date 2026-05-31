@@ -32,9 +32,10 @@ function anatomyLines(n, lines, prefix, isLast, depth) {
   const childPrefix = depth === 0 ? '' : (isLast ? '    ' : '│   ');
   const typeHint = ['TEXT', 'INSTANCE', 'COMPONENT', 'VECTOR', 'RECTANGLE'].indexOf(n.type) !== -1 ? ' (' + n.type + ')' : '';
   let layout = '';
-  if (n.layoutMode) {
+  // layoutMode/itemSpacing getters THROW on node types that lack them (e.g. TEXT) — guard with `in`.
+  if ('layoutMode' in n && n.layoutMode) {
     layout = ' — ' + (n.layoutMode === 'HORIZONTAL' ? 'horizontal' : 'vertical') + ' auto-layout';
-    if (n.itemSpacing !== undefined) layout += ', gap: ' + n.itemSpacing + 'px';
+    if ('itemSpacing' in n && n.itemSpacing !== undefined) layout += ', gap: ' + n.itemSpacing + 'px';
   }
   lines.push(prefix + connector + (n.name || n.type) + typeHint + layout);
   if ('children' in n && n.children) {
@@ -56,14 +57,14 @@ function walkColors(n, data, depth) {
   if (n.type === 'INSTANCE' && n.name && /icon/i.test(n.name)) {
     data.icons.push({ name: n.name.replace(/^icon\s*\/?\s*/i, '').trim() || n.name });
   }
-  for (const fill of (n.fills && Array.isArray(n.fills) ? n.fills : [])) {
+  for (const fill of (('fills' in n && n.fills && Array.isArray(n.fills)) ? n.fills : [])) {
     if (fill.type === 'SOLID' && fill.color && fill.visible !== false) {
       const varId = fill.boundVariables && fill.boundVariables.color && fill.boundVariables.color.id;
       const entry = { hex: figmaRGBAToHex(Object.assign({}, fill.color, { a: fill.opacity })), nodeName: n.name || '', variableName: varId ? varNameMap[varId] : undefined };
       (isText ? data.textColors : data.fills).push(entry);
     }
   }
-  for (const stroke of (n.strokes && Array.isArray(n.strokes) ? n.strokes : [])) {
+  for (const stroke of (('strokes' in n && n.strokes && Array.isArray(n.strokes)) ? n.strokes : [])) {
     if (stroke.type === 'SOLID' && stroke.color && stroke.visible !== false) {
       const varId = stroke.boundVariables && stroke.boundVariables.color && stroke.boundVariables.color.id;
       data.strokes.push({ hex: figmaRGBAToHex(Object.assign({}, stroke.color, { a: stroke.opacity })), nodeName: n.name || '', variableName: varId ? varNameMap[varId] : undefined });
@@ -107,7 +108,8 @@ const spacingProps = [
   ['paddingLeft', 'Padding left'], ['itemSpacing', 'Gap'], ['cornerRadius', 'Border radius'], ['strokeWeight', 'Border width'],
 ];
 for (const [key, label] of spacingProps) {
-  const value = spacingNode[key];
+  let value;
+  try { value = spacingNode[key]; } catch (e) { continue; } // getter throws if node lacks the prop
   if (value !== undefined && value !== null && typeof value === 'number') {
     const binding = boundVars[key];
     const varId = binding && binding.id;
