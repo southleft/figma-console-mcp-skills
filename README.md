@@ -3,18 +3,20 @@
 **The most powerful [Figma Console MCP](https://github.com/southleft/figma-console-mcp) capabilities,
 repackaged as Markdown skills for the _native_ Figma MCP server.**
 
-The official Figma MCP server is intentionally general-purpose: it reads designs
+The official Figma MCP server is powerful and general-purpose: it reads designs
 (`get_design_context`, `get_metadata`, `get_variable_defs`, `get_screenshot`, `search_design_system`)
-and writes to Figma through a single JavaScript-execution tool, `use_figma`. It is excellent at
-design↔code, but it doesn't ship the deep **design-systems** tooling that the
-[Figma Console MCP](https://github.com/southleft/figma-console-mcp) has — token export/import,
-variable management, component-set analysis, WCAG linting, accessibility audits, version
-diffing/changelogs, annotations, comments, FigJam, and Slides.
+and writes to Figma through `use_figma`, which runs Figma Plugin API JavaScript. That flexibility
+means it *can* do a great deal — the harder part is doing each design-systems job well and
+repeatably.
 
-This repo bridges that gap. Each directory here is a **skill** — a Markdown playbook (plus
-ready-to-paste scripts) that teaches your AI agent to perform a Console MCP capability using only the
-native Figma MCP. Plugin-API capabilities run through `use_figma`; a few read-only capabilities
-(version history, comments) use the Figma REST API.
+This repo packages that know-how. Each directory is a **skill** — a Markdown playbook plus
+ready-to-paste scripts, distilled from the
+[Figma Console MCP](https://github.com/southleft/figma-console-mcp) — so your agent reliably handles
+design-systems work without reinventing the Plugin API each session: token export/import (DTCG, CSS,
+Tailwind…), variable management, component-set analysis, WCAG linting, accessibility audits, version
+diffing/changelogs, annotations, comments, FigJam, and Slides. Most run through `use_figma`; a few
+reach data the Plugin API can't (version history, comments) via the Figma REST API, or analyze code
+(axe-core).
 
 > **You do not need to install the Figma Console MCP to use these skills.** You only need the native
 > Figma MCP server and (for the four REST skills) a Figma personal access token.
@@ -114,7 +116,7 @@ scripts read `$FIGMA_TOKEN` at runtime. Full steps (creating the token, scopes) 
 
 ## The 22 skills
 
-### 🎨 Tokens & Variables — _the native MCP can't write tokens; these can_
+### 🎨 Tokens & Variables — _export, import & manage variables in code-ready formats_
 | Skill | What it does |
 |---|---|
 | [`figma-export-tokens`](figma-export-tokens) | Export Figma variables → DTCG / CSS vars / Tailwind v4–v3 / SCSS / TS / JSON. Resolves aliases + multi-mode. Works on **any plan** (Plugin API, not the Enterprise-only Variables REST API). |
@@ -132,7 +134,7 @@ scripts read `$FIGMA_TOKEN` at runtime. Full steps (creating the token, scopes) 
 | [`figma-design-system-inventory`](figma-design-system-inventory) | One-call unified extraction: tokens + components + styles + visual specs. |
 | [`figma-deep-component`](figma-deep-component) | Unlimited-depth component tree with resolved tokens, mainComponent refs, reactions. |
 
-### ♿ Quality & Accessibility — _the native MCP has nothing design-side here_
+### ♿ Quality & Accessibility — _WCAG 2.2 + design-system audits, run right in the file_
 | Skill | What it does |
 |---|---|
 | [`figma-lint-design`](figma-lint-design) | WCAG 2.2 + design-system quality lint over a node tree. |
