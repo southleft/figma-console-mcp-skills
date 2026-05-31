@@ -23,7 +23,7 @@ function figmaRGBAToHex(c) {
 
 // ---- Anatomy: ASCII layer tree of the (deepest) variant ----
 function countDepth(n) {
-  if (!n.children || n.children.length === 0) return 0;
+  if (!('children' in n) || !n.children || n.children.length === 0) return 0;
   return 1 + Math.max(...n.children.map(countDepth));
 }
 function anatomyLines(n, lines, prefix, isLast, depth) {
@@ -37,7 +37,7 @@ function anatomyLines(n, lines, prefix, isLast, depth) {
     if (n.itemSpacing !== undefined) layout += ', gap: ' + n.itemSpacing + 'px';
   }
   lines.push(prefix + connector + (n.name || n.type) + typeHint + layout);
-  if (n.children) {
+  if ('children' in n && n.children) {
     const visible = n.children.filter((c) => c.visible !== false);
     visible.forEach((c, i) => anatomyLines(c, lines, prefix + childPrefix, i === visible.length - 1, depth + 1));
   }
@@ -69,7 +69,7 @@ function walkColors(n, data, depth) {
       data.strokes.push({ hex: figmaRGBAToHex(Object.assign({}, stroke.color, { a: stroke.opacity })), nodeName: n.name || '', variableName: varId ? varNameMap[varId] : undefined });
     }
   }
-  if (n.children) for (const c of n.children) walkColors(c, data, depth + 1);
+  if ('children' in n && n.children) for (const c of n.children) walkColors(c, data, depth + 1);
 }
 const variantNodes = (node.type === 'COMPONENT_SET' && node.children && node.children.length > 0) ? node.children : [node];
 const variantData = variantNodes.map((variant) => {
@@ -94,7 +94,7 @@ function walkType(n, depth) {
       lineHeight: lh && lh.unit !== 'AUTO' ? lh.value : undefined,
     });
   }
-  if (n.children) for (const c of n.children) walkType(c, depth + 1);
+  if ('children' in n && n.children) for (const c of n.children) walkType(c, depth + 1);
 }
 walkType(node.type === 'COMPONENT_SET' && node.children && node.children[0] ? node.children[0] : node, 0);
 

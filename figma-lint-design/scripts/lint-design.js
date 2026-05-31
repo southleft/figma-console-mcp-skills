@@ -64,7 +64,7 @@ function isLargeText(fontSize, fontWeight) {
 }
 function hasNonColorIndicator(node) {
   try {
-    if (!node.children) return false;
+    if (!('children' in node) || !node.children) return false;
     for (const child of node.children) {
       try {
         if (child.type === 'VECTOR' || child.type === 'BOOLEAN_OPERATION' || child.type === 'INSTANCE') return true;

@@ -47,10 +47,10 @@ function getEffectiveBg(node) {
 }
 function hasChildOfType(node, types) {
   try {
-    for (const child of (node.children || [])) {
+    for (const child of (('children' in node && node.children) || [])) {
       try {
         if (types.includes(child.type)) return true;
-        for (const gc of (child.children || [])) if (types.includes(gc.type)) return true;
+        for (const gc of (('children' in child && child.children) || [])) if (types.includes(gc.type)) return true;
       } catch (e) {}
     }
   } catch (e) {}
@@ -60,7 +60,7 @@ function collectColorPairs(node, pairs, depth) {
   if (depth > 5) return;
   try {
     if (node.type === 'TEXT') for (const f of (node.fills || [])) if (f.type === 'SOLID' && f.visible !== false) { pairs.push({ fg: { r: f.color.r, g: f.color.g, b: f.color.b }, bg: getEffectiveBg(node), nodeName: node.name, nodeId: node.id }); break; }
-    for (const c of (node.children || [])) collectColorPairs(c, pairs, depth + 1);
+    for (const c of (('children' in node && node.children) || [])) collectColorPairs(c, pairs, depth + 1);
   } catch (e) {}
 }
 

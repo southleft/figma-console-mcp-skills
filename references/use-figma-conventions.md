@@ -58,6 +58,23 @@ Figma's Variables **REST** API (`/v1/files/:key/variables/local`) is **Enterpris
 read through the Plugin API — so they work regardless of plan. This is the single biggest reason to
 prefer these skills over a raw REST call for variables.
 
+## Plugin API gotchas (verified against real files)
+
+These bit us during live testing — every shipped script already guards against them, but keep them in
+mind when adapting a script:
+
+- **`node.children` THROWS on leaf nodes.** Accessing `.children` on a node type that can't have
+  children (TEXT, RECTANGLE, ELLIPSE, VECTOR, LINE, …) throws a `TypeError` — it does **not** return
+  `undefined`, and `(node.children || [])` does **not** save you (the throw happens before `||`).
+  Guard recursive walks with `if ("children" in node && node.children) { … }`, or short-circuit on a
+  container type check first (`if (node.type === 'FRAME' && node.children) …`).
+- **Alias / bound-variable targets can live outside the enumerated set.** Neither
+  `getLocalVariableCollectionsAsync()` nor `getLocalVariablesAsync()` is guaranteed to return every
+  variable an alias points at — orphaned/hidden collections remain referenceable. If you resolve a
+  `VARIABLE_ALIAS` (or a node's `boundVariables`) by looking it up in a prebuilt name map, fall back
+  to a direct `await figma.variables.getVariableByIdAsync(id)` for any id you didn't index, or you'll
+  leak raw `VariableID:…` strings into your output.
+
 ## Returning large results
 
 `use_figma` return values are serialized whole. For big design systems, page or summarize inside the

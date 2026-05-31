@@ -101,17 +101,33 @@ const result = {
 // ============================== TOKENS ==============================
 if (has("tokens")) {
   const collections = await figma.variables.getLocalVariableCollectionsAsync();
+  const varCache = {};
   const idToName = {};
+  async function getVar(id) {
+    if (id in varCache) return varCache[id];
+    const v = await figma.variables.getVariableByIdAsync(id);
+    varCache[id] = v || null;
+    if (v) idToName[id] = v.name;
+    return v;
+  }
   for (const col of collections) {
-    for (const vid of col.variableIds) {
-      const v = await figma.variables.getVariableByIdAsync(vid);
-      if (v) idToName[v.id] = v.name;
+    for (const vid of col.variableIds) await getVar(vid);
+  }
+  // Alias targets can live in collections NOT returned by getLocalVariableCollectionsAsync()
+  // (and absent from getLocalVariablesAsync()) yet still be referenceable. Resolve them
+  // directly so references never leak a raw VariableID.
+  for (const id of Object.keys(idToName)) {
+    const v = varCache[id];
+    if (!v) continue;
+    for (const modeId in v.valuesByMode) {
+      const raw = v.valuesByMode[modeId];
+      if (raw && typeof raw === "object" && raw.type === "VARIABLE_ALIAS") await getVar(raw.id);
     }
   }
   function encodeValue(raw, type) {
     if (raw && typeof raw === "object" && raw.type === "VARIABLE_ALIAS") {
       const name = idToName[raw.id];
-      return name ? { reference: "{" + name.split("/").join(".") + "}" } : { alias: raw.id };
+      return name ? { reference: "{" + name.split("/").join(".") + "}" } : { unresolvedAlias: raw.id };
     }
     if (type === "COLOR" && raw && typeof raw === "object") return toHex(raw);
     return raw;
@@ -122,7 +138,7 @@ if (has("tokens")) {
   for (const col of collections) {
     const variables = [];
     for (const vid of col.variableIds) {
-      const v = await figma.variables.getVariableByIdAsync(vid);
+      const v = varCache[vid];
       if (!v) continue;
       varCount++;
       byType[v.resolvedType] = (byType[v.resolvedType] || 0) + 1;

@@ -24,6 +24,29 @@ try {
   }
 } catch (e) { /* variables may be unavailable; fall back to hex */ }
 
+// boundVariables can reference variables that getLocalVariablesAsync() does NOT return
+// (ghost/orphaned collections that remain referenceable). Pre-resolve every bound-variable
+// target in the set's subtree directly so resolveVarId never leaks a raw VariableID.
+async function ensureVar(id) {
+  if (varNameMap[id]) return;
+  try {
+    const v = await figma.variables.getVariableByIdAsync(id);
+    if (v) varNameMap[id] = { name: v.name, collection: null, type: v.resolvedType };
+  } catch (e) { /* unreachable target — falls back to raw id */ }
+}
+async function preResolveBoundVars(n) {
+  const bv = n.boundVariables;
+  if (bv) {
+    for (const prop of Object.keys(bv)) {
+      const b = bv[prop];
+      if (Array.isArray(b)) { for (const x of b) if (x && x.id) await ensureVar(x.id); }
+      else if (b && b.id) await ensureVar(b.id);
+    }
+  }
+  if ("children" in n && n.children) { for (const c of n.children) await preResolveBoundVars(c); }
+}
+await preResolveBoundVars(node);
+
 function resolveVarId(id) {
   return varNameMap[id] ? varNameMap[id].name : id;
 }
@@ -78,7 +101,7 @@ function extractSignature(variant) {
     } catch (e) {}
 
     // First text child's color often changes per state too.
-    if (child.children) {
+    if ("children" in child && child.children) {
       for (const textChild of child.children) {
         if (textChild.type === "TEXT") {
           try {

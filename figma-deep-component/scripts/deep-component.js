@@ -28,6 +28,29 @@ try {
   }
 } catch (e) { /* variables may be unavailable */ }
 
+// boundVariables can reference variables that getLocalVariablesAsync() does NOT return
+// (ghost/orphaned collections that remain referenceable). Pre-resolve every bound-variable
+// target in the subtree directly so the sync resolver below never leaks a raw VariableID.
+async function ensureVar(id) {
+  if (varNameMap[id]) return;
+  try {
+    const v = await figma.variables.getVariableByIdAsync(id);
+    if (v) varNameMap[id] = { name: v.name, resolvedType: v.resolvedType, collection: null, scopes: v.scopes || [], codeSyntax: v.codeSyntax || {} };
+  } catch (e) { /* unreachable target — will fall back to {id} */ }
+}
+async function preResolveBoundVars(n, depth) {
+  const bv = n.boundVariables;
+  if (bv) {
+    for (const prop of Object.keys(bv)) {
+      const b = bv[prop];
+      if (Array.isArray(b)) { for (const x of b) if (x && x.id) await ensureVar(x.id); }
+      else if (b && b.id) await ensureVar(b.id);
+    }
+  }
+  if (depth > 0 && "children" in n && n.children) { for (const c of n.children) await preResolveBoundVars(c, depth - 1); }
+}
+await preResolveBoundVars(rootNode, DEPTH);
+
 function resolveBoundVars(bv) {
   if (!bv) return null;
   const resolved = {};
@@ -170,12 +193,12 @@ function walkNode(n, currentDepth) {
   const props = extractNodeProps(n);
   for (const k of Object.keys(props)) nodeData[k] = props[k];
 
-  if (n.children && currentDepth < DEPTH) {
+  if ("children" in n && n.children && currentDepth < DEPTH) {
     nodeData.children = [];
     for (const child of n.children) {
       try { nodeData.children.push(walkNode(child, currentDepth + 1)); } catch (e) { /* inaccessible slot sublayer */ }
     }
-  } else if (n.children) {
+  } else if ("children" in n && n.children) {
     nodeData.childCount = n.children.length;
     nodeData._depthLimitReached = true;
   }

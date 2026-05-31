@@ -36,6 +36,7 @@ const childAnnotations = [];
 if (INCLUDE_CHILDREN && 'children' in node && node.children) {
   const walk = (parent, depth) => {
     if (depth > MAX_DEPTH) return;
+    if (!('children' in parent) || !parent.children) return;
     for (const child of parent.children) {
       try {
         const anns = extractAnnotations(child);

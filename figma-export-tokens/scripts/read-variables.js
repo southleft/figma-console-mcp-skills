@@ -7,12 +7,32 @@
 
 const collections = await figma.variables.getLocalVariableCollectionsAsync();
 
-// First pass: id -> variable name, so we can render aliases as DTCG references.
-const idToName = {};
+// Cache + name index. We resolve variables once and reuse.
+const varCache = {};   // id -> Variable | null
+const idToName = {};   // id -> "Group/Token" name (Figma uses "/" group separators)
+
+async function getVar(id) {
+  if (id in varCache) return varCache[id];
+  const v = await figma.variables.getVariableByIdAsync(id);
+  varCache[id] = v || null;
+  if (v) idToName[id] = v.name;
+  return v;
+}
+
+// Pass 1: index every variable enumerated from local collections.
 for (const col of collections) {
-  for (const vid of col.variableIds) {
-    const v = await figma.variables.getVariableByIdAsync(vid);
-    if (v) idToName[v.id] = v.name; // Figma names use "/" group separators
+  for (const vid of col.variableIds) await getVar(vid);
+}
+
+// Pass 2: alias targets can live in collections that getLocalVariableCollectionsAsync()
+// does NOT return (a real Figma gotcha — the target is still referenceable). Resolve any
+// alias target we haven't indexed yet so references never leak a raw VariableID.
+for (const id of Object.keys(idToName)) {
+  const v = varCache[id];
+  if (!v) continue;
+  for (const modeId in v.valuesByMode) {
+    const raw = v.valuesByMode[modeId];
+    if (raw && typeof raw === 'object' && raw.type === 'VARIABLE_ALIAS') await getVar(raw.id);
   }
 }
 
@@ -27,7 +47,7 @@ function colorToHex(c) {
 // "{Color.Brand.Primary}" DTCG-style reference from a Figma "Color/Brand/Primary" name.
 function toReference(targetId) {
   const name = idToName[targetId];
-  if (!name) return { alias: targetId };
+  if (!name) return { unresolvedAlias: targetId }; // truly unreachable (deleted/inaccessible)
   return { reference: '{' + name.split('/').join('.') + '}' };
 }
 
@@ -44,7 +64,7 @@ for (const col of collections) {
   const modes = col.modes.map((m) => ({ modeId: m.modeId, name: m.name }));
   const variables = [];
   for (const vid of col.variableIds) {
-    const v = await figma.variables.getVariableByIdAsync(vid);
+    const v = varCache[vid];
     if (!v) continue;
     const valuesByMode = {};
     for (const m of col.modes) {
