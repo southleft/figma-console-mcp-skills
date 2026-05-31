@@ -9,37 +9,52 @@ disable-model-invocation: false
 Produce a complete documentation page for one component or component set: overview, anatomy tree,
 design tokens, variants/states matrix, typography, accessibility, content guidelines, and (optionally)
 design-code parity and YAML frontmatter. This skill **collects** structured data from the file via
-`use_figma`; **you (the agent) assemble** the Markdown from it using the template in references.
+`use_figma`, then a **deterministic Node converter** (`scripts/generate-doc.mjs`) emits the Markdown —
+the same collected JSON always produces identical Markdown. Do **not** freehand the doc from prose.
 
 ## Skill boundaries
 - **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
-- **Markdown section layout + the `cleanVariantName` rule** → [references/doc-template.md](references/doc-template.md).
+- **The collect script runs anywhere** (`use_figma`); **the converter is Node and runs in a terminal** (`node scripts/generate-doc.mjs ...`). Same split as `figma-export-tokens`. If you can't run Node, you can't produce the doc — say so rather than freehanding it.
+- **Markdown section layout + the `cleanVariantName` rule** → [references/doc-template.md](references/doc-template.md). The converter already implements every rule in that file; treat it as the spec, not a checklist for hand-assembly.
 - **Reading/writing annotations as standalone specs** → use the `figma-annotations` skill.
 - **Exporting the whole token system** (not just one component's tokens) → use `figma-export-tokens`.
 
 ## Workflow
 
 1. **Identify the target.** Get the component or component-set node ID from the current selection or a
-   URL/ID the user provides. Component **sets** (with variants) produce the richest docs.
-2. **Collect data.** Run [`scripts/collect-component-data.js`](scripts/collect-component-data.js) via
-   `use_figma` (`skillNames: "figma-generate-component-doc"`). It returns the anatomy tree, per-variant
-   colors with bound token names, typography, spacing tokens, component property definitions
-   (variants/booleans/text props), the description, and any annotations on the node and its children.
-3. **Assemble Markdown** following [references/doc-template.md](references/doc-template.md). Map the
-   collected data into the sections: Overview (+ When to / When NOT to Use parsed from the description),
-   Anatomy, Variants & States, Tokens, Typography, Content Guidelines, Accessibility. Apply
-   `cleanVariantName` so `"Type=Image, Size=12"` renders as `Image / 12`.
-4. **Optional code parity.** If the user supplies a code component (props, source path, base library),
-   add a Design-Code Parity section and `[View Source]` / `[Storybook]` links per the template.
-5. **Optional frontmatter.** If requested, prepend YAML frontmatter (name, status, figma URL, tags).
-6. **Write or return.** Write the `.md` to the path the user gave, or return inline. Report the path
-   and a one-line summary (variant count, token count).
+   URL/ID the user provides. Component **sets** (with variants) produce the richest docs. Set `NODE_ID`
+   in the collect script. Also note the file URL (for the `figma:` link / frontmatter).
+2. **Collect data → save JSON.** Run [`scripts/collect-component-data.js`](scripts/collect-component-data.js)
+   via `use_figma` (`skillNames: "figma-generate-component-doc"`). It returns the anatomy tree, per-variant
+   colors (with bound token id + name), typography (font family, numeric weight + name, size, line height,
+   letter spacing), spacing tokens, component property definitions (variants/booleans/text props), the
+   description, and annotations (with category names). **Save the returned JSON to a file** (e.g.
+   `collected.json`).
+3. **Generate the Markdown (deterministic).** Run the Node converter in a terminal:
+   ```bash
+   node scripts/generate-doc.mjs collected.json [--code-info codeInfo.json] [--out docs/components/Button.md] [--frontmatter] [--file-url <figma-url>]
+   ```
+   It ports the source generator's section logic exactly: Overview (+ When to / When NOT to Use parsed
+   from the description), Component Anatomy, Variants (matrix + icon mapping + configurable props),
+   Token Specification (color + spacing tables), Typography, Content Guidelines, Accessibility, Design
+   Annotations, and — with `--code-info` — Implementation, Design-Code Parity, and Changelog.
+   `cleanVariantName` is applied automatically (`Type=Image, Size=12` → `Image / 12`). Same input →
+   identical output.
+4. **Optional code parity.** To add Implementation / Parity / `[View Source]` & `[Storybook]` links,
+   read the component source and write a `codeInfo.json` (props, importStatement, sourceFiles,
+   baseComponent, changelog, …), then pass `--code-info codeInfo.json`.
+5. **Optional frontmatter.** Pass `--frontmatter` to prepend YAML frontmatter (title, status, version,
+   tags, figma URL, lastUpdated).
+6. **Review & deliver.** Read the emitted Markdown, sanity-check it, then write/return it. Report the
+   path and a one-line summary (variant count, token count).
 
 ## Notes
 - **Font loading:** if you add a step that writes text into Figma (e.g. stamping the doc back onto the
   canvas), `await figma.loadFontAsync(...)` first. Pure documentation generation reads only.
-- The collect script uses `depth`/`maxNodes` constants to keep payloads small for deep trees — raise
-  them only if the anatomy looks truncated.
-- Token names come from `boundVariables`; if a value is hardcoded (no bound variable) flag it in the
-  Tokens section as a hardcoded value to fix.
-- These tools require the **Figma Desktop** app (the Plugin API isn't available in the browser).
+- The collect script uses `MAX_DEPTH` to keep payloads small for deep trees — raise it only if the
+  anatomy looks truncated.
+- Token names come from `boundVariables`; a color/spacing with no bound variable renders as `—` in the
+  token tables (a hardcoded value to replace with a token).
+- The converter is dependency-free (Node 18+, ESM). It exits non-zero with a clear message if the JSON
+  is missing or malformed.
+- These collect tools require the **Figma Desktop** app (the Plugin API isn't available in the browser).

@@ -60,14 +60,14 @@ function walkColors(n, data, depth) {
   for (const fill of (('fills' in n && n.fills && Array.isArray(n.fills)) ? n.fills : [])) {
     if (fill.type === 'SOLID' && fill.color && fill.visible !== false) {
       const varId = fill.boundVariables && fill.boundVariables.color && fill.boundVariables.color.id;
-      const entry = { hex: figmaRGBAToHex(Object.assign({}, fill.color, { a: fill.opacity })), nodeName: n.name || '', variableName: varId ? varNameMap[varId] : undefined };
+      const entry = { hex: figmaRGBAToHex(Object.assign({}, fill.color, { a: fill.opacity })), nodeName: n.name || '', variableId: varId || undefined, variableName: varId ? varNameMap[varId] : undefined };
       (isText ? data.textColors : data.fills).push(entry);
     }
   }
   for (const stroke of (('strokes' in n && n.strokes && Array.isArray(n.strokes)) ? n.strokes : [])) {
     if (stroke.type === 'SOLID' && stroke.color && stroke.visible !== false) {
       const varId = stroke.boundVariables && stroke.boundVariables.color && stroke.boundVariables.color.id;
-      data.strokes.push({ hex: figmaRGBAToHex(Object.assign({}, stroke.color, { a: stroke.opacity })), nodeName: n.name || '', variableName: varId ? varNameMap[varId] : undefined });
+      data.strokes.push({ hex: figmaRGBAToHex(Object.assign({}, stroke.color, { a: stroke.opacity })), nodeName: n.name || '', variableId: varId || undefined, variableName: varId ? varNameMap[varId] : undefined });
     }
   }
   if ('children' in n && n.children) for (const c of n.children) walkColors(c, data, depth + 1);
@@ -81,18 +81,32 @@ const variantData = variantNodes.map((variant) => {
 
 // ---- Typography (from the default variant) ----
 const typography = [];
+// Map Figma fontName.style strings to numeric weights + canonical names (matches the source generator's weightNames table).
+const weightByStyle = { thin: 100, hairline: 100, extralight: 200, ultralight: 200, light: 300, regular: 400, normal: 400, book: 400, medium: 500, semibold: 600, demibold: 600, bold: 700, extrabold: 800, ultrabold: 800, black: 900, heavy: 900 };
 const weightNames = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black' };
+function styleToWeight(style) {
+  const key = String(style || '').toLowerCase().replace(/\s+/g, '').replace(/italic|oblique/g, '');
+  return weightByStyle[key] || 400;
+}
 function walkType(n, depth) {
   if (depth > MAX_DEPTH) return;
   if (n.type === 'TEXT') {
     const fs = n.fontSize, fn = n.fontName || {};
     const lh = n.lineHeight;
+    const ls = n.letterSpacing;
+    const weight = styleToWeight(fn.style);
+    // letterSpacing is a {value, unit} object; only PIXELS converts cleanly to px.
+    let letterSpacing = 0;
+    if (ls && typeof ls.value === 'number') letterSpacing = ls.unit === 'PERCENT' ? ls.value : ls.value;
     typography.push({
       nodeName: n.name || 'Text',
       fontFamily: fn.family || 'Unknown',
       fontStyle: fn.style || 'Regular',
+      fontWeight: weight,
+      fontWeightName: weightNames[weight] || String(weight),
       fontSize: typeof fs === 'number' ? fs : undefined,
       lineHeight: lh && lh.unit !== 'AUTO' ? lh.value : undefined,
+      letterSpacing: letterSpacing,
     });
   }
   if ('children' in n && n.children) for (const c of n.children) walkType(c, depth + 1);
@@ -113,7 +127,7 @@ for (const [key, label] of spacingProps) {
   if (value !== undefined && value !== null && typeof value === 'number') {
     const binding = boundVars[key];
     const varId = binding && binding.id;
-    spacingTokens.push({ property: label, value, variableName: varId ? varNameMap[varId] : undefined });
+    spacingTokens.push({ property: label, value, variableId: varId || undefined, variableName: varId ? varNameMap[varId] : undefined });
   }
 }
 
@@ -128,9 +142,22 @@ for (const rawName of Object.keys(propsRaw)) {
   else if (def.type === 'TEXT') textProps.push({ name, defaultValue: def.defaultValue || '' });
 }
 
+// ---- Annotation category name resolution (categoryId -> human label) ----
+const annCategoryMap = {};
+try {
+  const cats = await figma.annotations.getAnnotationCategoriesAsync();
+  for (const c of (cats || [])) annCategoryMap[c.id] = c.label || c.id;
+} catch (e) { /* categories API unavailable on this node/file — leave map empty */ }
+
 // ---- Annotations on the node and immediate children ----
 function extractAnns(n) {
-  return (n.annotations || []).map((a) => ({ label: a.label || null, labelMarkdown: a.labelMarkdown || null, properties: a.properties ? a.properties.map((p) => ({ type: p.type })) : null }));
+  return (n.annotations || []).map((a) => ({
+    label: a.label || null,
+    labelMarkdown: a.labelMarkdown || null,
+    categoryId: a.categoryId || null,
+    categoryName: a.categoryId ? (annCategoryMap[a.categoryId] || null) : null,
+    properties: a.properties ? a.properties.map((p) => ({ type: p.type })) : null,
+  }));
 }
 const nodeAnnotations = extractAnns(node);
 const childAnnotations = [];
