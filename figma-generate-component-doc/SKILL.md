@@ -12,9 +12,7 @@ design-code parity and YAML frontmatter. This skill **collects** structured data
 `use_figma`; **you (the agent) assemble** the Markdown from it using the template in references.
 
 ## Skill boundaries
-- **Plugin API rules** (return pattern, async getters, page reset) → load the official
-  [`figma-use`](https://www.figma.com/community/skills) skill first; this skill assumes it.
-- **Shared `use_figma` idiom + helpers** → [../references/use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - **Markdown section layout + the `cleanVariantName` rule** → [references/doc-template.md](references/doc-template.md).
 - **Reading/writing annotations as standalone specs** → use the `figma-annotations` skill.
 - **Exporting the whole token system** (not just one component's tokens) → use `figma-export-tokens`.

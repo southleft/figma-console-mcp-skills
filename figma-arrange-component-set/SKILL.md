@@ -13,9 +13,7 @@ row labels, and top column headers. The result is the kind of variant sheet you'
 docs.
 
 ## Skill boundaries
-- **Plugin API rules** (return pattern, async getters, `loadFontAsync`, layoutSizing-after-append) →
-  load the official [`figma-use`](https://www.figma.com/community/skills) skill first.
-- **Shared idiom + helpers** → [../references/use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - **Understanding what the variants mean** (state machine, CSS) → use `figma-analyze-component-set`.
 - This **writes a new layout** to the canvas — it is a design-system authoring capability the native
   MCP's `get_design_context` / `get_metadata` (read-only) do not cover.

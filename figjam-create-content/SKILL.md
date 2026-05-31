@@ -13,9 +13,7 @@ and `get connections`. This gives you fine-grained control when the native one-s
 existing board).
 
 ## Skill boundaries
-- **Plugin API rules** (return pattern, async getters, page reset, atomic errors) → load the official
-  [`figma-use`](https://www.figma.com/community/skills) skill first; this skill assumes it.
-- **Shared `use_figma` idiom + helpers** → [../references/use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - **One complete snippet per operation** → [references/figjam-snippets.md](references/figjam-snippets.md).
 - **Whole-diagram generation in one call** → use the native `generate_diagram` tool instead.
 

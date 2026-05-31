@@ -10,12 +10,10 @@ Comments live only in Figma's **REST API** — the Plugin API (`use_figma`) and 
 can't touch them. This skill reads comment threads, posts new comments (optionally pinned to a node),
 replies to existing threads, and deletes comments.
 
+> **Setup — terminal + token required.** This skill runs shell commands, so it works in **Claude Code** (including the "Code" tab inside Claude Desktop), Cursor, Codex, or Gemini CLI — it does **not** run in plain Claude Desktop or claude.ai chat (no shell). The Figma connector's OAuth login does **not** authorize these REST calls, so you must supply your own **Figma personal access token**: in Figma go to **Settings → Security → Personal access tokens**, generate one with scope *File content: read* (plus *Comments: read/write*), then set it in your shell: `export FIGMA_TOKEN="figd_…"`. The script reads it from the environment at runtime — never put the token in a skill file.
+
 ## Setup & skill boundaries
 
-- **You need a Figma PAT.** Do the one-time token setup in
-  [../references/rest-api-setup.md](../references/rest-api-setup.md) and `export FIGMA_TOKEN=...`
-  first. Scopes: **File content: Read** (to list comments) and **Comments: Read and write** (to
-  post or delete).
 - All requests use `X-Figma-Token: $FIGMA_TOKEN` against `https://api.figma.com`.
 - **`@mentions` are a Figma UI-only feature.** Putting `@name` in a message renders as plain text,
   not a clickable mention, and does **not** trigger a Figma notification.

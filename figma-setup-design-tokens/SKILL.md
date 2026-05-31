@@ -11,8 +11,7 @@ fastest way to stand up a new token system (or a new collection within one). Bec
 atomic script, either everything is created or nothing is (failed scripts apply no changes).
 
 ## Skill boundaries
-- Plugin API rules → official `figma-use` skill (load first).
-- Shared idiom + `hexToRgb` → [use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - Incremental CRUD / batch edits to an existing system → `figma-manage-variables`.
 - Sync from a code token file → `figma-import-tokens`.
 

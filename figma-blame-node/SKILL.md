@@ -10,6 +10,8 @@ Like `git blame`, but for Figma. Given a node and a target (a `componentProperty
 a descendant child node id), this localizes the **version that first introduced** the target and
 returns that version's label, author handle, and timestamp.
 
+> **Setup — terminal + token required.** This skill runs shell commands, so it works in **Claude Code** (including the "Code" tab inside Claude Desktop), Cursor, Codex, or Gemini CLI — it does **not** run in plain Claude Desktop or claude.ai chat (no shell). The Figma connector's OAuth login does **not** authorize these REST calls, so you must supply your own **Figma personal access token**: in Figma go to **Settings → Security → Personal access tokens**, generate one with scope *File content: read* (plus *File versions: read*), then set it in your shell: `export FIGMA_TOKEN="figd_…"`. The script reads it from the environment at runtime — never put the token in a skill file.
+
 ## Why binary search
 
 A naive walk would fetch the node at every version — `N` API calls for `N` versions. Existence of a
@@ -21,10 +23,6 @@ fewer probes is strictly better.
 
 ## Setup & skill boundaries
 
-- **You need a Figma PAT.** Version history is REST-only — the native Figma MCP and the Plugin API
-  (`use_figma`) can't reach it. Do the token setup in
-  [../references/rest-api-setup.md](../references/rest-api-setup.md) and `export FIGMA_TOKEN=...`
-  first. Scopes: **File content: Read** + **File versions: Read**.
 - All requests use `X-Figma-Token: $FIGMA_TOKEN` against `https://api.figma.com`.
 
 ## Derive the file key

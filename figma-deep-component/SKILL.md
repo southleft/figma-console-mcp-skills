@@ -14,9 +14,7 @@ references (including whether the main is a variant and its set), prototype `rea
 `annotations`. This is the richest single-component read for high-fidelity code generation.
 
 ## Skill boundaries
-- **Plugin API rules** (return pattern, async getters, `figma.mixed`) → load the official
-  [`figma-use`](https://www.figma.com/community/skills) skill first.
-- **Shared idiom + helpers** → [../references/use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - **Whole-file inventory** (all tokens/components/styles at once) → use `figma-design-system-inventory`.
 - **Variant set as a CSS state machine** (per-state diffs, pseudo-class mapping) →
   use `figma-analyze-component-set`.

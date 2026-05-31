@@ -14,9 +14,7 @@ code; this skill confirms the code didn't drift away from the design.
 All design reads go through `use_figma`, so it works on **any Figma plan**.
 
 ## Skill boundaries
-- **Plugin API rules** → load the official [`figma-use`](https://www.figma.com/community/skills)
-  skill first; this skill assumes it.
-- **Shared idiom + helpers** → [../references/use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - **Generating code from a design** → that's the native `get_design_context`; this skill validates, not generates.
 - **CODE-side a11y to feed `codeSpec.accessibility`** → use `figma-scan-code-accessibility`
   (`--map-to-codespec` emits exactly that object).

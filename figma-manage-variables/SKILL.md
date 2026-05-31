@@ -10,8 +10,7 @@ Incremental, surgical edits to a Figma variable system: create one or many, upda
 rename, set scopes and code syntax, add/rename modes, and delete. All via `use_figma`, on any plan.
 
 ## Skill boundaries
-- Plugin API rules → official `figma-use` skill (load first).
-- Shared idiom + `hexToRgb` → [use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - From-scratch bootstrap → `figma-setup-design-tokens`. Code sync → `figma-import-tokens` /
   `figma-export-tokens`.
 

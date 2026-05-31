@@ -14,12 +14,10 @@ personal access token (PAT). It does three things:
 3. **Diff** two versions — a cheap page-structure diff always, plus optional deep per-component
    diffs at `depth=2`.
 
+> **Setup — terminal + token required.** This skill runs shell commands, so it works in **Claude Code** (including the "Code" tab inside Claude Desktop), Cursor, Codex, or Gemini CLI — it does **not** run in plain Claude Desktop or claude.ai chat (no shell). The Figma connector's OAuth login does **not** authorize these REST calls, so you must supply your own **Figma personal access token**: in Figma go to **Settings → Security → Personal access tokens**, generate one with scope *File content: read* (plus *File versions: read*), then set it in your shell: `export FIGMA_TOKEN="figd_…"`. The script reads it from the environment at runtime — never put the token in a skill file.
+
 ## Setup & skill boundaries
 
-- **You need a Figma PAT.** The native Figma MCP and the Plugin API (`use_figma`) **cannot** read
-  version history — only REST can. Do the one-time token setup in
-  [../references/rest-api-setup.md](../references/rest-api-setup.md) and `export FIGMA_TOKEN=...`
-  before running anything here. The token needs **File content: Read** and **File versions: Read**.
 - All requests go to `https://api.figma.com` with the header `X-Figma-Token: $FIGMA_TOKEN`.
 - Endpoint reference: [references/endpoints.md](references/endpoints.md).
 

@@ -54,32 +54,31 @@ that matches how you work.
 ### Option A — Claude Desktop or claude.ai web (no terminal — best for designers)
 
 1. Download this repo: green **Code → Download ZIP**, then unzip it.
-2. In Claude, open **Settings → Capabilities → Skills** (Claude Desktop) or **Settings → Skills**
-   (claude.ai), choose **Create / upload a skill**, and upload a **ZIP of one skill folder** — e.g.
-   compress the `figma-export-tokens` folder so its `SKILL.md` sits at the root of the zip. Repeat for
-   each skill you want. Toggle it on.
-   ([Official guide](https://support.claude.com/en/articles/12512180-use-skills-in-claude) · requires a
-   plan with Skills / code-execution enabled.)
-3. In a chat with Figma connected, just ask ("export my Figma variables to CSS") or type
+2. Zip a single skill folder — in Finder/Explorer, **right-click the `figma-export-tokens` folder →
+   Compress** (no terminal needed). Its `SKILL.md` must sit at the root of the zip.
+3. In Claude, open **Settings → Capabilities → Skills** (Claude Desktop) or **Settings → Skills**
+   (claude.ai), choose **Create / upload a skill**, upload that zip, and toggle it on. Repeat for each
+   skill you want. ([Official guide](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
+   · requires a plan with Skills / code-execution enabled.)
+4. In a chat with Figma connected, just ask ("export my Figma variables to CSS") or type
    `/figma-export-tokens`.
 
-   *This path can't run the 4 REST skills* (version history, changelog, blame, comments) — they need a
-   terminal. Use Option B for those. Each skill carries its own `references/` in its zip; the repo's
-   top-level `references/` is optional extra reading (the `figma-use` skill already covers the API rules).
+   Every skill is **self-contained** — its `SKILL.md` and `scripts/` carry everything, so single-folder
+   zips work with no broken links. *This path can't run the 4 REST skills* (version history, changelog,
+   blame, comments) — they need a terminal (Option B).
 
 ### Option B — Claude Code (incl. the Code tab inside Claude Desktop), Cursor, etc. (terminal)
 
 ```bash
 git clone https://github.com/southleft/figma-console-mcp-skills.git
 cd figma-console-mcp-skills
-# Copy the skill folders AND the shared references/ together — each skill links to ../references/...,
-# so references/ must sit as a sibling of the skill folders:
-cp -R figma-* figjam-* references ~/.claude/skills/
+# Skills are self-contained — copy the ones you want into your skills folder:
+cp -R figma-* figjam-* ~/.claude/skills/
 ```
 
-This is the most capable setup: the `use_figma` skills **and** the shell the 4 REST skills need. A
-skill at `~/.claude/skills/figma-export-tokens/` resolves `../references/...` to
-`~/.claude/skills/references/`. Then ask naturally or type `/figma-export-tokens`.
+This is the most capable setup: the `use_figma` skills **and** the shell the 4 REST skills need. Then
+ask naturally or type `/figma-export-tokens`. (The repo's top-level `references/` holds canonical docs
+for maintainers — the skills don't depend on it.)
 
 ### Codex / Gemini CLI / other agents
 
@@ -103,8 +102,10 @@ Plugin API has no access to them). So these skills call Figma's **REST API** dir
 can't borrow the MCP's OAuth session — so they need your own **Figma personal access token**, and a
 host that can run commands (Option B; they won't run in plain web/desktop chat).
 
-Set it once in your terminal — `export FIGMA_TOKEN="figd_…"` — then run those skills. Full steps
-(creating the token, scopes) are in [references/rest-api-setup.md](references/rest-api-setup.md).
+Set it once in your terminal — `export FIGMA_TOKEN="figd_…"` — then run those skills. **The token lives
+in your shell environment, never inside a skill or its zip** (skills must not contain secrets); the
+scripts read `$FIGMA_TOKEN` at runtime. Full steps (creating the token, scopes) are in
+[references/rest-api-setup.md](references/rest-api-setup.md).
 
 ---
 
@@ -136,13 +137,17 @@ Set it once in your terminal — `export FIGMA_TOKEN="figd_…"` — then run th
 | [`figma-scan-code-accessibility`](figma-scan-code-accessibility) | axe-core + JSDOM scan of generated HTML (code-side Node script). |
 | [`figma-check-design-parity`](figma-check-design-parity) | Compare a Figma node vs a code spec; parity score + discrepancies. |
 
-### 🕓 Versioning & Collaboration — _REST + Figma token_
+### 🕓 Versioning & Collaboration — _⌨️ terminal + Figma token required_
 | Skill | What it does |
 |---|---|
 | [`figma-version-history`](figma-version-history) | List versions, snapshot a version, diff two versions. |
 | [`figma-generate-changelog`](figma-generate-changelog) | Human-readable markdown changelog between versions. |
 | [`figma-blame-node`](figma-blame-node) | Binary-search which version introduced a node/property change (~log₂N requests). |
 | [`figma-comments`](figma-comments) | Read / post / reply / delete file comments (with node pinning). |
+
+> ⌨️ **These four run shell commands** — they need a terminal-capable agent (Claude Code, the Code tab
+> inside Claude Desktop, Cursor, Codex, Gemini CLI) **plus a `FIGMA_TOKEN`**. They do **not** run in
+> plain Claude Desktop or claude.ai chat. Every other skill works anywhere the Figma connector does.
 
 ### 📝 Documentation, Annotations, FigJam & Slides
 | Skill | What it does |

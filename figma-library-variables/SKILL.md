@@ -11,8 +11,7 @@ need. Imported variables get a local id that behaves like any local variable (bi
 reference it).
 
 ## Skill boundaries
-- Plugin API rules → official `figma-use` skill (load first).
-- Shared idiom → [use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - Local (non-library) variables → `figma-export-tokens`, `figma-manage-variables`.
 
 ## Workflow

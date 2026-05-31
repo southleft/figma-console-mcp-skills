@@ -14,9 +14,7 @@ Starter/Pro/Org). This skill reads through the Plugin API via `use_figma`, so it
 plan** and resolves aliases + multi-mode values that `get_variable_defs` (default mode only) drops.
 
 ## Skill boundaries
-- **Plugin API rules** (return pattern, async getters, page reset) → load the official
-  [`figma-use`](https://www.figma.com/community/skills) skill first; this skill assumes it.
-- **Shared idiom + helpers** → [use-figma-conventions.md](../references/use-figma-conventions.md).
+- **`use_figma` rules** — load the official **`figma-use`** skill first; it is the full Figma Plugin API reference. Essentials these scripts rely on: plain JS with top-level `await` + `return` (no IIFE, no `figma.closePlugin()`; `console.log` is not returned), inputs inlined as `const` at the top of each script, colors in 0–1 range, load fonts before any text op, `await figma.getNodeByIdAsync(...)`, and **atomic errors** (a failed script applies nothing — read the error, fix, retry).
 - **Reverse direction** (code → Figma variables) → use the `figma-import-tokens` skill.
 
 ## Workflow
