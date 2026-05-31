@@ -1,4 +1,9 @@
-# `use_figma` conventions (shared reference)
+# `use_figma` conventions (reference)
+
+> **You do NOT need to load this file to use the skills.** Every skill is self-contained — each
+> `SKILL.md` already inlines these rules and points to the official `figma-use` skill (the canonical
+> Plugin API reference). This doc is optional background for readers and contributors; uploading a
+> single skill folder works without it.
 
 Every Plugin-API skill in this collection runs its JavaScript through the **native Figma MCP
 `use_figma` tool**. That tool has a specific execution model that differs from a normal Figma

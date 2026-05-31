@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-component-properties").
 // Pass COMPONENT_KEY (published library) and/or COMPONENT_ID (local). Provide both when you have them.
-// See ../../references/use-figma-conventions.md for the execution model.
+// See the official figma-use skill for the execution model.
 
 const COMPONENT_KEY = null;                 // published library component key, or null
 const COMPONENT_ID = "REPLACE_WITH_COMPONENT_OR_SET_ID"; // local COMPONENT / COMPONENT_SET id, or null

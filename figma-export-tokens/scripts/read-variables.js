@@ -3,7 +3,7 @@
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-export-tokens").
 // Returns a normalized JSON tree the agent converts to DTCG / CSS / Tailwind / SCSS / TS.
 // Uses the Plugin API (works on Starter/Pro/Org/Enterprise) — NOT the Enterprise-only
-// Variables REST API. See ../../references/use-figma-conventions.md.
+// Variables REST API. See the official figma-use skill.
 
 const collections = await figma.variables.getLocalVariableCollectionsAsync();
 

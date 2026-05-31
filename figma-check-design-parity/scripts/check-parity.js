@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-check-design-parity").
 // Plain JS, top-level await, returns JSON. Works on ANY Figma plan (Plugin API only).
-// See ../../references/use-figma-conventions.md and ../references/parity-scoring.md.
+// See the official figma-use skill and ../references/parity-scoring.md.
 
 // ---- Inputs (edit these) ----
 const NODE_ID = "REPLACE_WITH_NODE_ID";   // the Figma node to validate against

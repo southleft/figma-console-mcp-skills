@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-lint-design").
 // Plain JS, top-level await, returns JSON. Works on ANY Figma plan (Plugin API only).
-// See ../../references/use-figma-conventions.md and ../references/lint-rules.md.
+// See the official figma-use skill and ../references/lint-rules.md.
 
 // ---- Inputs (edit these) ----
 const NODE_ID = null;          // string node id, or null to lint the whole current page

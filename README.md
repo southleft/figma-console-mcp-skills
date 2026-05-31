@@ -27,11 +27,14 @@ A "skill" is a folder containing a `SKILL.md` with YAML frontmatter (`name`, `de
 request matches a skill's `description`, the agent loads it and follows the playbook. You can also
 invoke one explicitly with `/skill-name`.
 
-- **`scripts/*.js`** — ready-to-paste snippets for the native `use_figma` tool. They follow the
-  `use_figma` execution model (plain JS, top-level `await`, `return` for output, inlined inputs). See
-  [`references/use-figma-conventions.md`](references/use-figma-conventions.md).
+- **`scripts/*.js`** — ready-to-paste snippets for the native `use_figma` tool (plain JS, top-level
+  `await`, `return` for output, inlined inputs). The full Plugin API reference is the official
+  **`figma-use`** skill.
 - **`scripts/*.mjs` / `*.sh`** — runnable Node/bash for the REST and code-side skills.
-- **`references/*.md`** — on-demand detail loaded when needed.
+- **A skill's own `references/`** — extra detail bundled *inside* that skill's folder, so it travels
+  with a single-folder upload. **Every skill is self-contained** — you don't need anything else from
+  the repo. (The top-level [`references/`](references) is optional background/contributor docs that no
+  skill depends on.)
 
 **Prerequisite:** Always load the official **`figma-use`** skill alongside any Plugin-API skill here —
 it's the source of truth for the Figma Plugin API surface. These skills add design-systems workflows

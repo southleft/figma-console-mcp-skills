@@ -1,7 +1,7 @@
 // figma-library-variables — import a library variable into the current file by key.
 // Run via `use_figma` (skillNames: "figma-library-variables"). Idempotent: re-importing
 // returns the same local id. Use the key from list-library-variables.js.
-// See ../../references/use-figma-conventions.md.
+// See the official figma-use skill.
 
 const VARIABLE_KEYS = [
   'paste_variable_key_here',

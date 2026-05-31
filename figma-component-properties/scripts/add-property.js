@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-component-properties").
 // Properties live on the parent COMPONENT_SET (or a standalone COMPONENT) — NOT on a variant.
-// See ../../references/use-figma-conventions.md for the execution model.
+// See the official figma-use skill for the execution model.
 
 const NODE_ID = "REPLACE_WITH_COMPONENT_OR_SET_ID";
 const PROPERTY_NAME = "Label";              // human-readable property name

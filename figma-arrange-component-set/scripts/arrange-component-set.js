@@ -5,7 +5,7 @@
 //   COMPONENT_SET_ID — id of the COMPONENT_SET, or "" to use the current selection.
 //   COLUMN_PROPERTY  — property to use for columns, or null to auto-pick the last property.
 //   GAP / CELL_PADDING — spacing tuning.
-// See ../../references/use-figma-conventions.md for the execution model.
+// See the official figma-use skill for the execution model.
 
 const COMPONENT_SET_ID = "REPLACE_WITH_COMPONENT_SET_ID"; // or ""
 const COLUMN_PROPERTY = null; // e.g. "State"; null = auto (last property)

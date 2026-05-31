@@ -3,7 +3,7 @@
 // Creates a collection, renames/adds modes, and creates every variable with per-mode values.
 // Best for a fresh system or a new collection. For incremental edits use figma-manage-variables.
 // Run via `use_figma` (skillNames: "figma-setup-design-tokens"). Edit the constants below.
-// See ../../references/use-figma-conventions.md.
+// See the official figma-use skill.
 
 // ── INPUT (edit me) ────────────────────────────────────────────────────────────
 const COLLECTION_NAME = 'Primitives';

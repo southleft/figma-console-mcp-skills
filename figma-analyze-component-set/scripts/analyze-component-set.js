@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-analyze-component-set").
 // Input: set COMPONENT_SET_ID to the id of the COMPONENT_SET (purple dashed container), NOT a variant.
-// See ../../references/use-figma-conventions.md for the execution model.
+// See the official figma-use skill for the execution model.
 
 const COMPONENT_SET_ID = "REPLACE_WITH_COMPONENT_SET_ID";
 

@@ -1,6 +1,6 @@
 // figma-manage-variables — batch update many variable values in one call (10–50× faster than loops).
 // Run via `use_figma` (skillNames: "figma-manage-variables"). Edit UPDATES below.
-// See ../../references/use-figma-conventions.md.
+// See the official figma-use skill.
 
 // Each entry: variableId + modeId + value. COLOR accepts hex; others are literals.
 // Get variableId/modeId from figma-export-tokens' read script or get_variable_defs.

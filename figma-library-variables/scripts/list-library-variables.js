@@ -1,7 +1,7 @@
 // figma-library-variables — discover variables available from SUBSCRIBED team libraries.
 // Run via `use_figma` (skillNames: "figma-library-variables"). Optional name filters below.
 // Returns library collections + their variables (keys you can import). See
-// ../../references/use-figma-conventions.md.
+// the official figma-use skill.
 
 // ── optional filters (leave '' for all) ──
 const LIBRARY_NAME = '';     // partial match on collection's library

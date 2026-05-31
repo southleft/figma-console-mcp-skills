@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-deep-component").
 // Inputs: NODE_ID (any node, usually a COMPONENT/COMPONENT_SET/INSTANCE) and DEPTH (max recursion).
-// See ../../references/use-figma-conventions.md for the execution model.
+// See the official figma-use skill for the execution model.
 
 const NODE_ID = "REPLACE_WITH_NODE_ID";
 const DEPTH = 10;

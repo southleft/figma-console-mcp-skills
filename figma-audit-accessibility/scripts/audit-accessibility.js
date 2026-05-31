@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-audit-accessibility").
 // Plain JS, top-level await, returns JSON. Works on ANY Figma plan (Plugin API only).
-// See ../../references/use-figma-conventions.md and ../references/audit-categories.md.
+// See the official figma-use skill and ../references/audit-categories.md.
 
 // ---- Inputs (edit these) ----
 const NODE_ID = null;     // COMPONENT_SET / COMPONENT / INSTANCE id, or null to use the current selection

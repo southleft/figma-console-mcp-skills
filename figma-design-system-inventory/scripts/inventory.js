@@ -2,7 +2,7 @@
 //
 // Run via the native Figma MCP `use_figma` tool (pass skillNames: "figma-design-system-inventory").
 // Reads variables via the Plugin API → works on ANY Figma plan (no Enterprise REST requirement).
-// See ../../references/use-figma-conventions.md and references/visual-spec.md.
+// See the official figma-use skill and references/visual-spec.md.
 
 const INCLUDE = ["tokens", "components", "styles"]; // any subset
 const VERBOSITY = "full";              // "full" | "summary" | "inventory"

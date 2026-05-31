@@ -3,7 +3,7 @@
 // Run via `use_figma` (skillNames: "figma-import-tokens"). Edit the two constants below.
 // Two-pass: pass 1 creates/updates literal values; pass 2 wires aliases (so targets exist first).
 // Matches existing variables by saved Figma id → key → exact name, so re-imports don't duplicate.
-// See ../../references/use-figma-conventions.md.
+// See the official figma-use skill.
 
 // ── INPUT (edit me) ────────────────────────────────────────────────────────────
 const COLLECTION_NAME = 'Brand';
