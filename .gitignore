@@ -1,0 +1,14 @@
+# Dependencies (only the figma-scan-code-accessibility skill installs any)
+node_modules/
+package-lock.json
+*.log
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local scratch
+*.tmp
+scratch/

@@ -1,0 +1,17 @@
+{
+  "name": "figma-scan-code-accessibility",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone axe-core + JSDOM accessibility scanner for HTML (code side of the Figma a11y workflow).",
+  "bin": {
+    "figma-scan-code-accessibility": "scan.mjs"
+  },
+  "scripts": {
+    "scan": "node scan.mjs"
+  },
+  "dependencies": {
+    "axe-core": "^4.10.0",
+    "jsdom": "^25.0.0"
+  }
+}
