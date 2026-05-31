@@ -48,14 +48,16 @@ git clone https://github.com/southleft/figma-console-mcp-skills.git
 cd figma-console-mcp-skills
 
 # Claude Code / Claude Desktop: skills live in ~/.claude/skills
-cp -R figma-* figjam-* ~/.claude/skills/
-# the shared references/ is linked relatively from each skill; keep this repo around,
-# or copy references/ next to the skills if your host flattens paths.
+# Copy the skill folders AND the shared references/ folder together — each skill links to
+# ../references/..., so references/ must sit as a sibling of the skill folders.
+cp -R figma-* figjam-* references ~/.claude/skills/
 ```
 
-For other MCP hosts, place each skill folder wherever that host discovers skills. Then start a chat
-with the native Figma MCP connected and either let the agent auto-select a skill or type
-`/figma-export-tokens` (etc.).
+After this, a skill at `~/.claude/skills/figma-export-tokens/` resolves `../references/...` to
+`~/.claude/skills/references/` — so the shared docs link correctly. For other MCP hosts, place each
+skill folder wherever that host discovers skills, keeping `references/` as their sibling (or just keep
+this cloned repo and point your host at it). Then start a chat with the native Figma MCP connected and
+either let the agent auto-select a skill or type `/figma-export-tokens` (etc.).
 
 ### REST skills need a Figma token
 
@@ -110,6 +112,10 @@ the native Figma MCP.
 | [`figma-annotations`](figma-annotations) | Read & write designer annotations (specs pinned to nodes) + categories. |
 | [`figjam-create-content`](figjam-create-content) | Author FigJam: stickies, connectors, shapes, sections, tables, code blocks, auto-arrange. |
 | [`figma-slides`](figma-slides) | Author Figma Slides: create/reorder slides, text/shapes, backgrounds, transitions. |
+
+> `figjam-create-content` only works in a **FigJam** file and `figma-slides` only in a **Figma Slides**
+> file (the editor-specific node types throw elsewhere). The token, variable, component, lint, and
+> a11y skills work in standard Figma **design** files.
 
 ---
 
