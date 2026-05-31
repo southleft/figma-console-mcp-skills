@@ -106,6 +106,14 @@ component HTML — its `codeSpecAccessibility` output drops straight into `codeS
 }
 ```
 
+> **Parity with the Console tool.** The Console MCP `figma_check_design_parity` returns three
+> additional fields that this skill intentionally omits: `actionItems[]` (pre-computed fix
+> suggestions), `designData` (the extracted design spec), and `codeData` (the parsed code spec).
+> Here the skill returns only `discrepancies[]` + `parityScore` (plus `node`, `summary`, and
+> `ai_instruction`), and the agent reads the discrepancies and **proposes the fixes itself** rather
+> than relying on a generated `actionItems` list. If you need the raw design/code specs, fetch them
+> separately (e.g. via `get_design_context` / your code spec) — they are not part of this output.
+
 ## Relationship to native tooling
 
 `get_design_context` reads a design to **generate** code. This skill does the opposite: it

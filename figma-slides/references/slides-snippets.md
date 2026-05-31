@@ -83,8 +83,11 @@ const X = 100, Y = 100;
 const FONT_FAMILY = 'Inter', FONT_STYLE = 'Regular';
 const FONT_SIZE = 48;
 const COLOR_HEX = '#111111';   // optional
-const TEXT_ALIGN = null;       // optional: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED'
+const TEXT_ALIGN = null;       // optional: 'LEFT' | 'CENTER' | 'RIGHT'
 const WIDTH = null;            // optional fixed width (enables height auto-resize)
+const LINE_HEIGHT = null;      // optional line height in pixels
+const LETTER_SPACING = null;   // optional letter spacing in pixels
+const TEXT_CASE = null;        // optional: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE'
 
 const slide = await figma.getNodeByIdAsync(SLIDE_ID);
 if (!slide || slide.type !== 'SLIDE') throw new Error('Node ' + SLIDE_ID + ' is not a SLIDE');
@@ -98,6 +101,9 @@ t.x = X; t.y = Y;
 if (COLOR_HEX) { const h = COLOR_HEX.replace('#',''); t.fills = [{ type: 'SOLID', color: { r: parseInt(h.substring(0,2),16)/255, g: parseInt(h.substring(2,4),16)/255, b: parseInt(h.substring(4,6),16)/255 } }]; }
 if (TEXT_ALIGN) t.textAlignHorizontal = TEXT_ALIGN;
 if (typeof WIDTH === 'number') { t.resize(WIDTH, t.height); t.textAutoResize = 'HEIGHT'; }
+if (typeof LINE_HEIGHT === 'number') t.lineHeight = { value: LINE_HEIGHT, unit: 'PIXELS' };
+if (typeof LETTER_SPACING === 'number') t.letterSpacing = { value: LETTER_SPACING, unit: 'PIXELS' };
+if (TEXT_CASE) t.textCase = TEXT_CASE;
 slide.appendChild(t);
 return { id: t.id, text: t.characters };
 ```
@@ -204,6 +210,24 @@ if (!target || target.type !== 'SLIDE') throw new Error('Node ' + SLIDE_ID + ' i
 figma.viewport.slidesView = 'single-slide';
 figma.currentPage.focusedSlide = target;
 return { focused: target.id, name: target.name };
+```
+
+## Set view mode (grid / single-slide)
+
+Toggle the viewport between the grid overview and single-slide view — e.g. a presenter
+returning from a focused slide back to the grid.
+
+```js
+const MODE = 'grid';   // 'grid' | 'single-slide'
+figma.viewport.slidesView = MODE;
+return { mode: figma.viewport.slidesView };
+```
+
+## Get focused slide
+
+```js
+const focused = figma.currentPage.focusedSlide;
+return focused ? { id: focused.id, name: focused.name } : { focused: null };
 ```
 
 ## Skip / unskip a slide

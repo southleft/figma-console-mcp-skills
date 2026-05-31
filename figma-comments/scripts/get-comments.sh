@@ -68,6 +68,7 @@ printf '%s' "$RESP" | jq --argjson keepResolved "$INCLUDE_RESOLVED" '
     summary: {
       total: (.comments | length),
       active: ([.comments[] | select(.resolved_at == null)] | length),
-      resolved: ([.comments[] | select(.resolved_at != null)] | length)
+      resolved: ([.comments[] | select(.resolved_at != null)] | length),
+      returned: ([.comments[] | select($keepResolved == 1 or (.resolved_at == null))] | length)
     }
   }'

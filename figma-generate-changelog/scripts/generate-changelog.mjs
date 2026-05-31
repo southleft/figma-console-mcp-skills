@@ -442,7 +442,17 @@ async function main() {
   );
 
   if (args.json) {
-    process.stdout.write(JSON.stringify({ markdown, data: { page_structure: pageDiff, scoped_nodes: scoped } }, null, 2) + "\n");
+    const fromMeta = authorMap.get(fromVer) ?? null;
+    const toMeta = authorMap.get(toVer) ?? null;
+    process.stdout.write(JSON.stringify({
+      markdown,
+      structured: { page_structure: pageDiff, scoped_nodes: scoped },
+      _meta: {
+        authors_enriched: idsToLookup.length > 0,
+        from_author_found: !!fromMeta,
+        to_author_found: !!toMeta,
+      },
+    }, null, 2) + "\n");
   } else {
     process.stdout.write(markdown);
   }

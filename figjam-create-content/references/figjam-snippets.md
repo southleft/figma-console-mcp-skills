@@ -80,10 +80,14 @@ return { id: connector.id, type: connector.type };
 
 ```js
 const TEXT = 'Start';
-const SHAPE_TYPE = 'ROUNDED_RECTANGLE'; // SQUARE | ROUNDED_RECTANGLE | ELLIPSE | DIAMOND | TRIANGLE_UP | TRIANGLE_DOWN | PARALLELOGRAM_RIGHT | PARALLELOGRAM_LEFT
+// ROUNDED_RECTANGLE | ELLIPSE | DIAMOND | TRIANGLE_UP | TRIANGLE_DOWN | PARALLELOGRAM_RIGHT | PARALLELOGRAM_LEFT
+// engineering shapes: ENG_DATABASE | ENG_QUEUE | ENG_FILE | ENG_FOLDER
+const SHAPE_TYPE = 'ROUNDED_RECTANGLE';
 const X = 0, Y = 0, WIDTH = 200, HEIGHT = 100;
-const FILL_HEX = '#CFE8FF';   // optional
-const FONT_SIZE = 16;         // optional
+const FILL_HEX = '#CFE8FF';        // optional
+const FONT_SIZE = 16;              // optional
+const STROKE_HEX = null;           // optional stroke/border color, e.g. '#1E40AF'
+const STROKE_DASH_PATTERN = null;  // optional dash pattern, comma-separated, e.g. '10,5'
 
 function hexToRgb(hex){hex=String(hex).replace('#','');return{r:parseInt(hex.substring(0,2),16)/255,g:parseInt(hex.substring(2,4),16)/255,b:parseInt(hex.substring(4,6),16)/255};}
 const shape = figma.createShapeWithText();
@@ -91,6 +95,8 @@ if (SHAPE_TYPE) shape.shapeType = SHAPE_TYPE;
 shape.x = X; shape.y = Y;
 shape.resize(WIDTH, HEIGHT);          // resize before setting text so text reflows
 if (FILL_HEX) shape.fills = [{ type: 'SOLID', color: hexToRgb(FILL_HEX) }];
+if (STROKE_HEX) { shape.strokes = [{ type: 'SOLID', color: hexToRgb(STROKE_HEX) }]; shape.strokeWeight = 1; }
+if (STROKE_DASH_PATTERN) shape.dashPattern = STROKE_DASH_PATTERN.split(',').map(function(p){return parseFloat(p.trim());});
 if (TEXT) {
   try { await figma.loadFontAsync(shape.text.fontName); }
   catch (e) { await figma.loadFontAsync({ family: 'Inter', style: 'Medium' }); shape.text.fontName = { family: 'Inter', style: 'Medium' }; }

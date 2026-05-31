@@ -58,7 +58,7 @@ FILE_KEY=$(echo "$FILE_URL" | sed -E 's#.*/(design|file)/([A-Za-z0-9]+).*#\2#')
      --start 4096800000 --max 100 --no-autosaves
    ```
 
-   It prints JSON: the introducing version (`version_id`, `label`, `author`, `created_at`), an
+   It prints JSON: the introducing version (`version_id`, `label`, `user_handle`, `created_at`), an
    `attribution_certainty`, and a `probes_made` count so you can see how few calls it took.
 
 ## Reading the result

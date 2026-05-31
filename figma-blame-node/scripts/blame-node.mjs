@@ -245,10 +245,10 @@ async function main() {
       version_id: lookupId,
       label: meta?.label ?? null,
       created_at: meta?.created_at ?? startNode?.lastModified ?? null,
-      author: meta?.user_handle ?? null,
+      user_handle: meta?.user_handle ?? null,
       is_labeled: !!(meta?.label && meta.label !== ""),
     };
-    certainty = introduced.author === "Figma" ? "system_attributed" : introduced.author ? "exact" : "metadata_unavailable";
+    certainty = introduced.user_handle === "Figma" ? "system_attributed" : introduced.user_handle ? "exact" : "metadata_unavailable";
     if (certainty === "metadata_unavailable")
       notes.push("Introduced at the start version itself, but its author metadata wasn't found within the versions-list lookback. The introduction is real; the user just isn't attributable from REST data alone.");
   } else {
@@ -257,15 +257,15 @@ async function main() {
       version_id: v.id,
       label: v.label || null,
       created_at: v.created_at,
-      author: v.user?.handle ?? null,
+      user_handle: v.user?.handle ?? null,
       is_labeled: !!(v.label && v.label !== ""),
     };
     if (oldestExistsIdx === versions.length - 1) {
       certainty = "exists_at_lookback_horizon";
       notes.push(`Target also exists at the oldest scanned version (${v.id}). The true introduction is older than the search range — increase --max (currently ${lookback}).`);
-    } else if (introduced.author === "Figma") {
+    } else if (introduced.user_handle === "Figma") {
       certainty = "system_attributed";
-      notes.push("The introduction version was a system autosave (author='Figma'). Re-run with --no-autosaves to snap to the nearest LABELED version containing the change.");
+      notes.push("The introduction version was a system autosave (user_handle='Figma'). Re-run with --no-autosaves to snap to the nearest LABELED version containing the change.");
     } else {
       certainty = "exact";
     }
