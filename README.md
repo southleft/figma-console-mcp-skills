@@ -41,31 +41,70 @@ on top of it.
 
 ## Install
 
-Clone, then copy the skill directories into your agent's skills folder.
+A "skill" is just a folder with a `SKILL.md` file — an open, portable format supported by **Claude
+Desktop, Claude Code, claude.ai (web), Cursor, OpenAI Codex, and Google Gemini CLI**. Pick the path
+that matches how you work.
+
+> **Two one-time prerequisites (both free, no token):**
+> 1. **Connect Figma.** In your AI tool, add the **Figma** connector and sign in — this is a one-time
+>    OAuth login (see ["Do I need a Figma token?"](#do-i-need-a-figma-token-mostly-no) below).
+> 2. **Have the official `figma-use` skill available.** It ships with the Figma integration and carries
+>    the Figma Plugin API rules these skills build on. These skills extend it.
+
+### Option A — Claude Desktop or claude.ai web (no terminal — best for designers)
+
+1. Download this repo: green **Code → Download ZIP**, then unzip it.
+2. In Claude, open **Settings → Capabilities → Skills** (Claude Desktop) or **Settings → Skills**
+   (claude.ai), choose **Create / upload a skill**, and upload a **ZIP of one skill folder** — e.g.
+   compress the `figma-export-tokens` folder so its `SKILL.md` sits at the root of the zip. Repeat for
+   each skill you want. Toggle it on.
+   ([Official guide](https://support.claude.com/en/articles/12512180-use-skills-in-claude) · requires a
+   plan with Skills / code-execution enabled.)
+3. In a chat with Figma connected, just ask ("export my Figma variables to CSS") or type
+   `/figma-export-tokens`.
+
+   *This path can't run the 4 REST skills* (version history, changelog, blame, comments) — they need a
+   terminal. Use Option B for those. Each skill carries its own `references/` in its zip; the repo's
+   top-level `references/` is optional extra reading (the `figma-use` skill already covers the API rules).
+
+### Option B — Claude Code (incl. the Code tab inside Claude Desktop), Cursor, etc. (terminal)
 
 ```bash
 git clone https://github.com/southleft/figma-console-mcp-skills.git
 cd figma-console-mcp-skills
-
-# Claude Code / Claude Desktop: skills live in ~/.claude/skills
-# Copy the skill folders AND the shared references/ folder together — each skill links to
-# ../references/..., so references/ must sit as a sibling of the skill folders.
+# Copy the skill folders AND the shared references/ together — each skill links to ../references/...,
+# so references/ must sit as a sibling of the skill folders:
 cp -R figma-* figjam-* references ~/.claude/skills/
 ```
 
-After this, a skill at `~/.claude/skills/figma-export-tokens/` resolves `../references/...` to
-`~/.claude/skills/references/` — so the shared docs link correctly. For other MCP hosts, place each
-skill folder wherever that host discovers skills, keeping `references/` as their sibling (or just keep
-this cloned repo and point your host at it). Then start a chat with the native Figma MCP connected and
-either let the agent auto-select a skill or type `/figma-export-tokens` (etc.).
+This is the most capable setup: the `use_figma` skills **and** the shell the 4 REST skills need. A
+skill at `~/.claude/skills/figma-export-tokens/` resolves `../references/...` to
+`~/.claude/skills/references/`. Then ask naturally or type `/figma-export-tokens`.
 
-### REST skills need a Figma token
+### Codex / Gemini CLI / other agents
 
-`figma-version-history`, `figma-generate-changelog`, `figma-blame-node`, and `figma-comments` read
-data the Plugin API can't reach (version history, comments). They call the Figma REST API with a
-personal access token — one-time setup in
-[`references/rest-api-setup.md`](references/rest-api-setup.md). All other skills need nothing beyond
-the native Figma MCP.
+Same folders — drop them in that tool's skills directory (e.g. `.codex/skills/`, `.gemini/skills/`;
+check the tool's docs). The `SKILL.md` format is portable across all of them.
+
+---
+
+## Do I need a Figma token? (Mostly no)
+
+**No — for the native Figma MCP and 18 of the 22 skills.** Connecting Figma uses **OAuth**: you sign
+in to your Figma account once when you add the connector, and there's no token to manage. Everything
+that runs through `use_figma` — tokens, variables, components, lint, accessibility, annotations,
+FigJam, Slides, component docs — is authorized automatically. (Figma's MCP doesn't even accept personal
+access tokens — OAuth only.)
+
+**Yes — only for the 4 REST skills:** `figma-version-history`, `figma-generate-changelog`,
+`figma-blame-node`, `figma-comments`. They're the exception because **version history and comments
+aren't part of the native Figma MCP's tools and can't be reached through `use_figma`** (the Figma
+Plugin API has no access to them). So these skills call Figma's **REST API** directly — and a skill
+can't borrow the MCP's OAuth session — so they need your own **Figma personal access token**, and a
+host that can run commands (Option B; they won't run in plain web/desktop chat).
+
+Set it once in your terminal — `export FIGMA_TOKEN="figd_…"` — then run those skills. Full steps
+(creating the token, scopes) are in [references/rest-api-setup.md](references/rest-api-setup.md).
 
 ---
 
