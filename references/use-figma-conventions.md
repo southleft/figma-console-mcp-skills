@@ -63,11 +63,17 @@ prefer these skills over a raw REST call for variables.
 These bit us during live testing — every shipped script already guards against them, but keep them in
 mind when adapting a script:
 
-- **`node.children` THROWS on leaf nodes.** Accessing `.children` on a node type that can't have
-  children (TEXT, RECTANGLE, ELLIPSE, VECTOR, LINE, …) throws a `TypeError` — it does **not** return
-  `undefined`, and `(node.children || [])` does **not** save you (the throw happens before `||`).
-  Guard recursive walks with `if ("children" in node && node.children) { … }`, or short-circuit on a
-  container type check first (`if (node.type === 'FRAME' && node.children) …`).
+- **Many property getters THROW on node types that lack them — not just `.children`.** Accessing a
+  property a node type doesn't define throws a `TypeError` (it does **not** return `undefined`), and
+  `(node.fills || [])` does **not** save you (the throw happens before `||`). Confirmed throwers when
+  read on the wrong node type (e.g. TEXT/leaf): `children`, `layoutMode`, `itemSpacing`,
+  `paddingLeft/Right/Top/Bottom`, `primaryAxisSizingMode`, `counterAxisSizingMode`,
+  `layoutSizingHorizontal/Vertical`, `primaryAxisAlignItems`, `counterAxisAlignItems`, `layoutWrap`,
+  `min/maxWidth`, `min/maxHeight`, `clipsContent`, `fills`, `strokes`, `strokeWeight`, `cornerRadius`,
+  `effects`. **In any code that walks arbitrary/recursive nodes**, guard each such access with
+  `"prop" in node`, wrap it in `try/catch`, or short-circuit on a container/shape **type check first**
+  (`if (node.type === 'FRAME' && node.children) …`). Reading these on a node already known to be a
+  COMPONENT/FRAME is safe.
 - **`figma.loadAllPagesAsync()` is NOT supported in `use_figma`** (it works in a packaged plugin /
   the Console MCP bridge, but throws here). Consequently `figma.root.findAllWithCriteria(...)` —
   which requires all pages loaded — also fails. To enumerate components/nodes across pages, load each
