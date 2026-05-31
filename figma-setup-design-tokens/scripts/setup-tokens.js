@@ -43,6 +43,7 @@ const created = [], errors = [];
 for (const t of TOKENS) {
   try {
     const v = figma.variables.createVariable(t.name, collection, t.type);
+    if (t.description) v.description = t.description; // optional per-token description (matches Console setup)
     for (const mode of MODES) {
       const raw = t.values[mode];
       if (raw === undefined || raw === null) continue;

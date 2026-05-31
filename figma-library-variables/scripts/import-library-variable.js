@@ -12,7 +12,7 @@ const imported = [], errors = [];
 for (const key of VARIABLE_KEYS) {
   try {
     const v = await figma.variables.importVariableByKeyAsync(key);
-    imported.push({ key, localId: v.id, name: v.name, type: v.resolvedType });
+    imported.push({ key, localId: v.id, name: v.name, type: v.resolvedType, description: v.description || null, variableCollectionId: v.variableCollectionId, remote: v.remote === true });
   } catch (e) {
     errors.push({ key, error: String(e && e.message || e) });
   }

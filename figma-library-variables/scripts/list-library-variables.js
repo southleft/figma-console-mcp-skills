@@ -36,6 +36,7 @@ for (const col of cols) {
     collectionKey: col.key,
     collectionName: col.name,
     libraryName: col.libraryName || null,
+    variableCount: vars.length,
     variables: vars.map((v) => ({ key: v.key, name: v.name, type: v.resolvedType })),
   });
 }

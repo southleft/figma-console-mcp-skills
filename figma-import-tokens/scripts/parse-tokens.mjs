@@ -29,6 +29,7 @@ for (let i = 0; i < argv.length; i++) {
 if (!positionals[0]) { console.error('Usage: node parse-tokens.mjs <tokens.json> [--default-mode Light] [--collection Brand]'); process.exit(1); }
 const DEFAULT_MODE = typeof flags['default-mode'] === 'string' ? flags['default-mode'] : 'Light';
 const COLLECTION = typeof flags.collection === 'string' ? flags.collection : 'Imported';
+const STRIP_PREFIX = typeof flags['strip-prefix'] === 'string' ? flags['strip-prefix'] : '';
 const EXT = 'figma-console-mcp';
 
 let doc;
@@ -60,7 +61,9 @@ const warnings = [];
       const values = { [DEFAULT_MODE]: coerce(child.$value, ftype) };
       const ext = child.$extensions && child.$extensions[EXT];
       if (ext && ext.modes) for (const [m, val] of Object.entries(ext.modes)) { values[m] = coerce(val, ftype); modeSet.add(m); }
-      const t = { name: [...path, key].join('/'), type: ftype, values };
+      let tname = [...path, key].join('/');
+      if (STRIP_PREFIX && tname.startsWith(STRIP_PREFIX)) tname = tname.slice(STRIP_PREFIX.length);
+      const t = { name: tname, type: ftype, values };
       if (ext && ext.variableId) t.figmaVariableId = ext.variableId;
       if (!child.$type) warnings.push(`${t.name}: no $type — defaulted to ${ftype}.`);
       tokens.push(t);

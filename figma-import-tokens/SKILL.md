@@ -20,6 +20,7 @@ matched by saved Figma id → key → exact name, so an update edits in place ra
    anything `figma-export-tokens` produced), run the bundled parser instead of flattening by hand:
    ```bash
    node scripts/parse-tokens.mjs tokens.tokens.json --default-mode Light --collection Brand
+   # --strip-prefix "ds-"   drops a leading name prefix on import (e.g. ds-color/x → color/x)
    ```
    It prints the exact `COLLECTION_NAME` / `MODES` / `TOKENS` constants to paste into the apply script
    — handling `$type`→Figma type, `{ref}` aliases, multi-mode (`$extensions…modes`), `dimension` unit
