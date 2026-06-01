@@ -56,7 +56,17 @@ that matches how you work.
 > 2. **Have the official `figma-use` skill available.** It ships with the Figma integration and carries
 >    the Figma Plugin API rules these skills build on. These skills extend it.
 
-> **⚡ Fastest path (Claude Code):** install the whole collection as a plugin in one command —
+> **⚡ Fastest path — `npx` (any agent: Claude Code, Codex, Cursor, Gemini CLI, …):** one command,
+> no manual file copying —
+> ```bash
+> npx skills add southleft/figma-console-mcp-skills          # install all skills
+> npx skills add southleft/figma-console-mcp-skills --list   # preview without installing
+> npx skills add southleft/figma-console-mcp-skills --skill figma-export-tokens   # just one
+> ```
+> Powered by the [`skills`](https://github.com/vercel-labs/skills) CLI — it detects your agent and
+> drops each skill into the right place.
+>
+> **Claude Code plugin** — alternatively, install the whole collection as a plugin:
 > ```
 > /plugin marketplace add southleft/figma-console-mcp-skills
 > /plugin install figma-console-mcp-skills@figma-console-mcp-skills
