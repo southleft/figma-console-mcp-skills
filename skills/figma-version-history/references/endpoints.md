@@ -1,7 +1,7 @@
 # Figma REST endpoints — version history
 
 All requests use the header `X-Figma-Token: $FIGMA_TOKEN` against `https://api.figma.com`.
-Token setup: [../../references/rest-api-setup.md](../../references/rest-api-setup.md). Required PAT
+Token setup: [../../../references/rest-api-setup.md](../../../references/rest-api-setup.md). Required PAT
 scopes: **File content: Read** and **File versions: Read**.
 
 ## List versions

@@ -2,7 +2,7 @@
 
 Each snippet is a complete `use_figma` script (plain JS, top-level `await`, `return`). Edit the
 constants, run, and check the returned IDs. Pass `skillNames: "figma-manage-variables"`.
-See [use-figma-conventions.md](../../references/use-figma-conventions.md) for the `hexToRgb` helper.
+See [use-figma-conventions.md](../../../references/use-figma-conventions.md) for the `hexToRgb` helper.
 
 ## Create a collection (with modes)
 

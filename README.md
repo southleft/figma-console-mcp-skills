@@ -66,8 +66,8 @@ that matches how you work.
 ### Option A — Claude Desktop or claude.ai web (no terminal — best for designers)
 
 1. Download this repo: green **Code → Download ZIP**, then unzip it.
-2. Zip a single skill folder — in Finder/Explorer, **right-click the `figma-export-tokens` folder →
-   Compress** (no terminal needed). Its `SKILL.md` must sit at the root of the zip.
+2. Zip a single skill folder — open the `skills/` folder, then in Finder/Explorer **right-click the
+   `figma-export-tokens` folder → Compress** (no terminal needed). Its `SKILL.md` must sit at the root of the zip.
 3. In Claude, open **Settings → Capabilities → Skills** (Claude Desktop) or **Settings → Skills**
    (claude.ai), choose **Create / upload a skill**, upload that zip, and toggle it on. Repeat for each
    skill you want. ([Official guide](https://support.claude.com/en/articles/12512180-use-skills-in-claude)
@@ -84,8 +84,8 @@ that matches how you work.
 ```bash
 git clone https://github.com/southleft/figma-console-mcp-skills.git
 cd figma-console-mcp-skills
-# Skills are self-contained — copy the ones you want into your skills folder:
-cp -R figma-* figjam-* ~/.claude/skills/
+# Skills are self-contained — copy all of them (or pick individual folders) into your skills folder:
+cp -R skills/* ~/.claude/skills/
 ```
 
 This is the most capable setup: the `use_figma` skills **and** the shell the 4 REST skills need. Then
