@@ -27,6 +27,7 @@
         "./skills/figma-deep-component",
         "./skills/figma-design-system-inventory",
         "./skills/figma-export-tokens",
+        "./skills/figma-extract-design-system",
         "./skills/figma-generate-changelog",
         "./skills/figma-generate-component-doc",
         "./skills/figma-import-tokens",
