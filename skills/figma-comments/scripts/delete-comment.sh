@@ -27,6 +27,10 @@ fi
 RAW="$1"
 FILE_KEY=$(echo "$RAW" | sed -E 's#.*/(design|file)/([A-Za-z0-9]+).*#\2#')
 COMMENT_ID="$2"
+if ! [[ "$COMMENT_ID" =~ ^[A-Za-z0-9_-]+$ ]]; then
+  echo "ERROR: Invalid COMMENT_ID format." >&2
+  exit 1
+fi
 
 # Capture HTTP status separately so we can report a clean success/failure.
 HTTP_CODE=$(curl -s -o /tmp/figma-delete-comment-resp.json -w '%{http_code}' \
